@@ -428,7 +428,7 @@ export function _tickPulseTrails() {
 export function _tickSource(t) {
   if (t - G.srcLastTick < TUNING.sourceTick) return;
   G.srcLastTick = t;
-  const cnt = _sourceNodeCount;
+  const cnt = _getSourceNodeCount();
   if (cnt <= 0) return;
   const full     = Math.min(cnt, TUNING.sourceSoftcapCount);
   const overflow = Math.max(0, cnt - TUNING.sourceSoftcapCount);

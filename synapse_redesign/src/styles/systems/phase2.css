@@ -1,0 +1,153 @@
+/* ============================================================
+   SYNAPSE v99 — Phase 2 · Pulse Modes / Sektor / Draft-Synergien
+   ============================================================ */
+
+/* ── Design-Token: Sektor-Farben ───────────────────────────────────────── */
+
+body[data-sector="inferno"]     { --sector-color: #ff6a30; --sector-glow: rgba(255,106,48,.22); }
+body[data-sector="deadzone"]    { --sector-color: #6a7a8a; --sector-glow: rgba(106,122,138,.18); }
+body[data-sector="surge_field"] { --sector-color: #30ddaa; --sector-glow: rgba(48,221,170,.20); }
+body[data-sector="static_fog"]  { --sector-color: #a0a0cc; --sector-glow: rgba(160,160,204,.18); }
+body[data-sector="deep_core"]   { --sector-color: #50c0ff; --sector-glow: rgba(80,192,255,.22); }
+body[data-sector="null_zone"]   { --sector-color: #8899aa; --sector-glow: transparent; }
+
+/* Sektor-Topbar-Glow */
+body:not([data-sector="null_zone"]) #topbar {
+  box-shadow: 0 2px 14px 0 var(--sector-glow, transparent);
+  transition: box-shadow 0.8s ease;
+}
+
+/* #sector-badge color/opacity stays; display/layout → progressive-ui.css (P0 Fix 2.4) */
+body[data-sector="null_zone"] #sector-badge { opacity: 0.45; }
+
+/* #pulse-mode-badge display/layout → progressive-ui.css (P0 Fix 2.4) */
+/* Modus-spezifische Farben */
+body[data-pulse-mode="standard"] { --pulse-mode-color: #88aacc; }
+body[data-pulse-mode="focus"]    { --pulse-mode-color: #ffcc44; }
+body[data-pulse-mode="scatter"]  { --pulse-mode-color: #44ddaa; }
+
+/* Pulse-Button Einfärbung nach Modus */
+body[data-pulse-mode="focus"]   #btn-pulse,
+body[data-pulse-mode="focus"]   #btn-pulse.pulse-rdy {
+  border-color:  #ffcc44 !important;
+  box-shadow:    0 0 10px rgba(255,204,68,.30), inset 0 0 6px rgba(255,204,68,.10) !important;
+}
+
+body[data-pulse-mode="scatter"] #btn-pulse,
+body[data-pulse-mode="scatter"] #btn-pulse.pulse-rdy {
+  border-color:  #44ddaa !important;
+  box-shadow:    0 0 10px rgba(68,221,170,.30), inset 0 0 6px rgba(68,221,170,.08) !important;
+}
+
+/* Focus-Puls: kurzer Gold-Flash beim Feuern */
+body[data-pulse-mode="focus"] #btn-pulse.pulse-fired {
+  animation: focus-pulse-flash 0.35s ease-out;
+}
+
+@keyframes focus-pulse-flash {
+  0%   { box-shadow: 0 0 20px 6px rgba(255,204,68,.80); }
+  100% { box-shadow: 0 0 10px rgba(255,204,68,.30); }
+}
+
+/* Scatter: Kein Combo-Glow */
+body[data-pulse-mode="scatter"] #combo-hud { opacity: 0.5; filter: grayscale(0.6); }
+
+/* ── Sektor-Auswirkungen: visuelle Hinweise ────────────────────────────── */
+
+/* Inferno: Warmer Energie-Topbar-Tint */
+body[data-sector="inferno"] #topbar-energy-val {
+  color:       #ffaa60 !important;
+  text-shadow: 0 0 8px rgba(255,170,96,.50);
+}
+
+/* Deadzone: Gedimmte passive Elemente */
+body[data-sector="deadzone"] .passive-indicator,
+body[data-sector="deadzone"] .src-tick-indicator {
+  opacity: 0.6;
+}
+
+/* Surge-Field: Combo-HUD leuchtet stärker */
+body[data-sector="surge_field"] #combo-hud {
+  text-shadow: 0 0 12px rgba(48,221,170,.55);
+}
+
+/* Static-Fog: Subtiles Rauschen auf dem Canvas */
+body[data-sector="static_fog"] canvas {
+  filter: contrast(0.97) brightness(0.98);
+}
+
+/* Deep-Core: L3-Cluster-Umrandung intensiver */
+body[data-sector="deep_core"] .l3-cluster-ring {
+  box-shadow: 0 0 14px rgba(80,192,255,.45);
+}
+
+/* ── Draft-Synergy Unlock ──────────────────────────────────────────────── */
+
+@keyframes synergy-unlock-glow {
+  0%   { box-shadow: inset 0 0 0px 0px rgba(255,220,80,0);    }
+  30%  { box-shadow: inset 0 0 40px 12px rgba(255,220,80,.28); }
+  100% { box-shadow: inset 0 0 0px 0px rgba(255,220,80,0);    }
+}
+
+body.synergy-unlock #game-shell,
+body.synergy-unlock #network-canvas-wrap {
+  animation: synergy-unlock-glow 1.8s ease-out forwards;
+}
+
+/* Synergy-Indikator im Draft-Panel */
+.draft-synergy-hint {
+  display:        flex;
+  align-items:    center;
+  gap:            6px;
+  font-size:      10px;
+  color:          rgba(255,220,80,.85);
+  margin-top:     4px;
+  padding:        2px 6px;
+  border-left:    2px solid rgba(255,220,80,.50);
+  animation:      fadeInUp 0.4s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* ── Pulse-Mode Keyboard-Shortcut Hint ─────────────────────────────────── */
+
+#pulse-mode-hint {
+  font-size:    9px;
+  color:        rgba(140,160,180,.55);
+  margin-top:   2px;
+  letter-spacing: 0.04em;
+  text-align:   center;
+  pointer-events: none;
+}
+
+/* ── Responsive Adjustments ────────────────────────────────────────────── */
+
+@media (max-width: 520px) {
+  #pulse-mode-badge,
+  #sector-badge {
+    font-size: 9px;
+    padding:   1px 5px;
+  }
+
+  #pulse-mode-hint { display: none; }
+}
+
+/* Tactical overrides for sector/pulse-mode badges → progressive-ui.css (P1 Fix 3.7) */
+
+
+/* ── Button-Reset für pulse-mode-badge (<button> Element) ─────────────── */
+#pulse-mode-badge {
+  /* Überschreibt Browser-button-Defaults */
+  appearance:      none;
+  -webkit-appearance: none;
+  border-style:    solid;
+  font-family:     var(--font-mono, monospace);
+  background:      rgba(0,0,0,.28);
+  outline:         none;
+}
+#pulse-mode-badge:focus-visible {
+  box-shadow: 0 0 0 2px var(--pulse-mode-color, #446688);
+}

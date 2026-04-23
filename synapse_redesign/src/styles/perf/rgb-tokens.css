@@ -1,0 +1,79 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   SYNAPSE v99 — RGB Channel Tokens
+   ══════════════════════════════════════════════════════════════════════════
+
+   Ergänzt tokens.css mit aufgeteilten RGB-Werten für dynamisches Alpha.
+
+   Verwendung:
+     border: 1px solid rgb(var(--rgb-cyan) / 0.28);
+     background:       rgb(var(--rgb-red)  / 0.08);
+     box-shadow: 0 0 16px rgb(var(--rgb-gold) / 0.55);
+
+   WICHTIG: Diese Werte sind KEINE rgba()-Strings — nur die 3 Kanäle.
+   Immer mit rgb(var(...) / alpha) oder rgba() verwenden.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@layer base {
+
+  :root {
+    /* ── Primary Gameplay Colors ── */
+    --rgb-cyan:      80  180 255;   /* Node / L1 Highlight              */
+    --rgb-cyan-hi:   130 235 255;   /* Active Node / Pulse              */
+    --rgb-blue:      70  130 255;   /* Link / L2                        */
+    --rgb-purple:    160  90 255;   /* L3 / Temporal Epoch              */
+    --rgb-pink:      255 120 180;   /* Sentience Epoch                  */
+
+    /* ── Status Colors ── */
+    --rgb-green:      60 255 140;   /* OK / Capture / Win               */
+    --rgb-green-hi:   80 255 200;   /* Vulnerability / Healing          */
+    --rgb-gold:      255 190  40;   /* Spine / Warning                  */
+    --rgb-orange:    255 120  20;   /* Backbone / Critical-Warn         */
+    --rgb-red:       255  50  40;   /* Critical / Boss / Damage         */
+    --rgb-red-hi:    255  80  80;   /* Boss-Telegraph-HP                */
+
+    /* ── Boss Profile Colors ── */
+    --rgb-boss-ghost:  40 255 200;
+    --rgb-boss-sigma: 180  60 255;
+    --rgb-boss-para:  100 255  40;
+
+    /* ── AI Colors ── */
+    --rgb-ai-analyst: 100 200 255;
+    --rgb-ai-tactician: 255 160  60;
+    --rgb-ai-saboteur: 255  80  80;
+
+    /* ── Neutral / UI ── */
+    --rgb-white:     255 255 255;
+    --rgb-black:       0   0   0;
+    --rgb-dark-bg:     0   3  12;   /* Body-Hintergrund                 */
+    --rgb-hud-bg:      0   4  20;   /* Topbar-Hintergrund               */
+    --rgb-dock-bg:     0   3  14;   /* Dock-Hintergrund                 */
+
+    /* ── Phase 2 ── */
+    --rgb-sector-neutral:  70 140 255;
+    --rgb-sector-hostile: 255  80  60;
+    --rgb-sector-corp:    255 200  50;
+    --rgb-pulse-focus:     80 220 255;
+    --rgb-pulse-scatter:  200  80 255;
+
+    /* ── Shorthand Alpha Helpers (häufige Kombinationen) ── */
+    /* Verwendung: background: var(--clr-cyan-08) */
+    --clr-cyan-04:  rgb(80 180 255 / .04);
+    --clr-cyan-08:  rgb(80 180 255 / .08);
+    --clr-cyan-16:  rgb(80 180 255 / .16);
+    --clr-cyan-28:  rgb(80 180 255 / .28);
+    --clr-cyan-55:  rgb(80 180 255 / .55);
+
+    --clr-green-08: rgb(60 255 140 / .08);
+    --clr-green-35: rgb(60 255 140 / .35);
+
+    --clr-red-08:   rgb(255 50 40 / .08);
+    --clr-red-45:   rgb(255 50 40 / .45);
+
+    --clr-gold-22:  rgb(255 190 40 / .22);
+    --clr-gold-55:  rgb(255 190 40 / .55);
+
+    --clr-purple-16: rgb(160 90 255 / .16);
+    --clr-purple-35: rgb(160 90 255 / .35);
+  }
+
+}

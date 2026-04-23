@@ -1,0 +1,83 @@
+/* ══════════════════════════════════════════════════════
+   SYNAPSE v99 — CSS ENTRY POINT (Performance Edition)
+   Order: Tokens → Base → Animations → HUD → Screens →
+          Panels → FX → Polish → Systems → Mobile → A11y
+          → Perf-GPU (highest priority)
+   ══════════════════════════════════════════════════════ */
+
+/* 0 — @layer Order + RGB Tokens (MUSS als erstes kommen) */
+@import './perf/layers.css';
+@import './perf/rgb-tokens.css';
+
+/* 1 — Tokens & Base */
+@import './tokens/tokens.css'    layer(base);
+@import './tokens/atmo.css'      layer(base);
+@import './base/reset.css'       layer(base);
+@import './base/shell.css'       layer(base);
+
+/* 2 — Animations */
+@import './animations/keyframes.css'  layer(animations);
+@import './animations/awakening.css'  layer(animations);
+
+/* 3 — HUD */
+@import './hud/base.css'      layer(hud);
+@import './hud/boss.css'      layer(hud);
+@import './hud/history.css'   layer(hud);
+@import './hud/widgets.css'   layer(hud);
+@import './hud/topbar.css'    layer(hud);
+@import './hud/dock.css'      layer(hud);
+
+/* 4 — Screens */
+@import './screens/title.css'     layer(screens);
+@import './screens/gameplay.css'  layer(screens);
+@import './screens/win.css'       layer(screens);
+
+/* 5 — Panels */
+@import './panels/side-panel.css'         layer(panels);
+@import './panels/panels.css'             layer(panels);
+@import './panels/protocol.css'           layer(panels);
+@import './panels/boss-report.css'        layer(panels);
+@import './panels/blueprint-nomads.css'   layer(panels);
+@import './panels/research.css'           layer(panels);
+@import './panels/epoch-reveal.css'       layer(panels);
+
+/* 6 — FX */
+@import './fx/glass.css'      layer(fx);
+@import './fx/cinematic.css'  layer(fx);
+@import './fx/premium.css'    layer(fx);
+@import './fx/gameplay.css'   layer(fx);
+
+/* 7 — Polish */
+@import './polish/hud-polish.css'    layer(polish);
+@import './polish/theme.css'         layer(polish);
+@import './polish/consistency.css'   layer(polish);
+@import './polish/layout-optimization.css' layer(polish); /* NEU */
+@import './polish/v99_missing_patches.css' layer(polish); /* v99-r5: Patches 9-A/C/E/F, 10-A/B/C/F */
+
+/* 8 — Mobile */
+@import './mobile/title.css'          layer(mobile);
+@import './mobile/gameplay.css'       layer(mobile);
+@import './mobile/dock.css'           layer(mobile);
+@import './mobile/overlay-fix.css'    layer(mobile);
+@import './mobile/network-focus.css'  layer(mobile);
+
+/* 9 — Responsive (legacy: erhalten für Rückwärtskompatibilität) */
+@import './base/responsive.css'       layer(mobile);
+/* 9b — Responsive v99-r5: mobile + desktop vollständig (überschreibt legacy) */
+@import './base/responsive_v99.css'   layer(mobile);
+
+/* 10 — A11y & final overrides */
+@import './a11y/perf.css'         layer(a11y);
+@import './a11y/colorblind.css'   layer(a11y);
+@import './a11y/tactical.css'     layer(a11y);
+
+/* 11 — Systems (ehemals Block 12) */
+@import './systems/phase1.css'   layer(systems);
+@import './systems/phase2.css'   layer(systems);
+@import './systems/phase3.css'   layer(systems);  /* Phase 3: Overclocking & Heat */
+@import './systems/phase4.css'   layer(systems);  /* Phase 4: Sentience & Synergies */
+@import './systems/data-ocean.css'    layer(systems);  /* Post-Game: Data Ocean Endless Mode */
+@import './systems/progressive-ui.css' layer(systems);  /* Progressive Disclosure Anti-Clutter UI */
+
+/* 13 — GPU Performance Patch (höchste Prio — überschreibt alles außer hotfixes) */
+@import './perf/gpu-animations.css';

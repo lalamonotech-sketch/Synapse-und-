@@ -1,0 +1,293 @@
+/**
+ * SYNAPSE v99 — Post-Game: Data Ocean (Endless Mode)
+ *
+ * Aktiviert über body.biome-data-ocean — überschreibt bestehende Tokens
+ * mit einem Tiefsee/Abyss-Theme. Keine neuen Panels, kein neues Layout.
+ * Rein additiv über CSS-Klassen-Hooks.
+ *
+ * Enthält:
+ *   - Globale Theme-Overrides (Farben, Hintergrund)
+ *   - HUD-Anpassungen für den Endless-Modus
+ *   - Sonar-Ping-Animation (btn-dive Transition)
+ *   - Anomalie-Klassen-Hooks
+ *   - Depth-Meter Visibility
+ *   - ABTAUCHEN-Button im Win-Screen
+ */
+
+/* ══════════════════════════════════════════════════════════════════════════
+   GLOBALE THEME-OVERRIDES — nur aktiv wenn body.biome-data-ocean gesetzt
+   ══════════════════════════════════════════════════════════════════════════ */
+
+body.biome-data-ocean {
+  /* CSS-Token-Overrides — ersetzt die grünen Synapse-Farben mit Tiefsee-Cyan */
+  --hud-val:           rgba(100, 255, 220, 1);
+  --hud-dim:           rgba(60, 180, 160, 0.7);
+  --hud-panel-bg:      rgba(0, 4, 12, 0.88);
+  --shell-grid-green:  rgba(0, 80, 100, 0.12);
+  --shell-spine-green: linear-gradient(180deg, rgba(0,180,200,0) 0%, rgba(0,200,220,0.25) 50%, rgba(0,180,200,0) 100%);
+
+  /* Canvas-Hintergrund: Tiefsee-Gradient */
+  background: radial-gradient(ellipse at 50% 50%, #000b18 0%, #000205 100%) !important;
+}
+
+/* ── Vignette: Ränder fallen in die Dunkelheit ──────────────────────────── */
+body.biome-data-ocean #vignette {
+  background: radial-gradient(
+    ellipse 70% 70% at 50% 50%,
+    transparent 10%,
+    rgba(0, 2, 5, 0.6) 60%,
+    #000205 90%
+  ) !important;
+  opacity: 1 !important;
+}
+
+/* ── HUD: Farben auf Tiefsee-Cyan umschalten ─────────────────────────────── */
+body.biome-data-ocean #hud {
+  border-bottom-color: rgba(0, 180, 160, 0.35);
+  box-shadow: 0 0 20px rgba(0, 150, 130, 0.15);
+  transition: border-bottom-color 1.2s ease, box-shadow 1.2s ease;
+}
+
+body.biome-data-ocean #phase-name {
+  color: rgba(100, 255, 220, 0.92) !important;
+  text-shadow: 0 0 14px rgba(60, 220, 180, 0.55) !important;
+}
+
+body.biome-data-ocean #layer-tag {
+  color: rgba(80, 200, 190, 0.8);
+  text-shadow: 0 0 8px rgba(40, 180, 160, 0.5);
+}
+
+body.biome-data-ocean .dock-btn {
+  border-color: rgba(0, 160, 150, 0.3);
+}
+
+body.biome-data-ocean #combo-hud {
+  color: rgba(100, 255, 220, 0.9);
+  text-shadow: 0 0 10px rgba(60, 220, 180, 0.5);
+}
+
+/* ── Branching Objectives: im Ocean versteckt (keine Pfad-Wahl mehr) ─────── */
+body.biome-data-ocean #obj-choice-container {
+  display: none !important;
+}
+
+/* ── Win-Screen im Ocean-Modus: Farbe anpassen ───────────────────────────── */
+body.biome-data-ocean #win-restart {
+  color: rgba(100, 230, 200, 0.85);
+}
+body.biome-data-ocean #win-restart:hover {
+  color: rgba(100, 255, 220, 0.98);
+  background: rgba(0, 60, 60, 0.06);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SONAR PING — Transition-Effekt beim Abtauchen
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.ocean-sonar-ping {
+  position:       fixed;
+  top:            50%;
+  left:           50%;
+  width:          10px;
+  height:         10px;
+  border-radius:  50%;
+  border:         4px solid rgba(100, 255, 220, 0.85);
+  transform:      translate(-50%, -50%);
+  z-index:        9999;
+  pointer-events: none;
+  animation:      ocean-sonar-expand 3s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes ocean-sonar-expand {
+  0%   {
+    width: 10px; height: 10px;
+    opacity: 1;
+    border-width: 4px;
+    box-shadow: 0 0 0 0 rgba(100, 255, 220, 0.4);
+  }
+  40%  {
+    opacity: 0.7;
+    box-shadow: 0 0 40px 20px rgba(60, 200, 180, 0.15);
+  }
+  100% {
+    width: 300vw; height: 300vw;
+    opacity: 0;
+    border-width: 1px;
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DEPTH METER — wird von obj-line übernommen, optional separates Element
+   ══════════════════════════════════════════════════════════════════════════ */
+
+#depth-meter {
+  display:      none; /* Standard: unsichtbar */
+  font-family:  'Share Tech Mono', monospace;
+  font-size:    13px;
+  letter-spacing: 4px;
+  color:        rgba(255, 255, 255, 0.6);
+  text-align:   center;
+  text-shadow:  0 0 10px rgba(100, 255, 220, 0.7);
+  transition:   color 0.4s ease;
+}
+
+body.biome-data-ocean #depth-meter {
+  display: block; /* Im Ocean sichtbar */
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ABTAUCHEN-BUTTON — Im Win-Screen (neben NEUER LAUF)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+#btn-dive {
+  display: none; /* Standardmäßig versteckt — wird per JS eingeblendet */
+}
+
+#btn-dive.visible {
+  display: block;
+}
+
+/* Basisstil des Dive-Buttons — matcht #win-restart Architektur */
+.dive-btn {
+  width:        100%;
+  padding:      13px 0;
+  border:       none;
+  border-radius: 0;
+  border-bottom: 1px solid rgba(60, 200, 255, 0.12);
+  border-left:  2px solid rgba(60, 200, 255, 0.35);
+  background:   transparent;
+  color:        rgba(80, 210, 255, 0.82);
+  font-family:  'Space Grotesk', sans-serif;
+  font-size:    clamp(0.5rem, 1.3vw, 0.65rem);
+  font-weight:  500;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  cursor:       pointer;
+  transition:   padding-left 0.32s cubic-bezier(0.25, 0, 0.15, 1),
+                color 0.25s,
+                background 0.25s,
+                border-left-color 0.25s;
+  outline:      none;
+  position:     relative;
+  text-align:   left;
+  padding-left: 14px;
+  margin-top:   4px;
+}
+
+.dive-btn::before {
+  content:    '';
+  position:   absolute;
+  left:       0;
+  top:        50%;
+  transform:  translateY(-50%);
+  width:      0;
+  height:     1px;
+  background: currentColor;
+  opacity:    0.65;
+  transition: width 0.32s cubic-bezier(0.25, 0, 0.15, 1), opacity 0.25s;
+}
+
+/* Kleine biolumineszente Pulse-Animation auf dem Button */
+@keyframes dive-btn-pulse {
+  0%, 100% { border-left-color: rgba(60, 200, 255, 0.35); }
+  50%       { border-left-color: rgba(60, 200, 255, 0.7); box-shadow: inset 3px 0 8px rgba(40, 180, 255, 0.15); }
+}
+.dive-btn {
+  animation: dive-btn-pulse 3s ease-in-out infinite;
+}
+
+.dive-btn:hover::before {
+  width:   12px;
+  opacity: 0.9;
+}
+
+.dive-btn:hover {
+  padding-left: 22px;
+  color:        rgba(100, 235, 255, 0.98);
+  background:   rgba(0, 40, 80, 0.08);
+  border-left-color: rgba(60, 200, 255, 0.65);
+  animation:    none; /* Hover übernimmt */
+  box-shadow:   inset 3px 0 12px rgba(40, 160, 255, 0.1);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ANOMALIE-KLASSEN — visuelle Hinweise auf aktive Modifikatoren
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ABYSSAL PRESSURE: HUD pulsiert dunkel-rot um Gefahr zu signalisieren */
+body.biome-data-ocean.anomaly-pressure #hud {
+  border-bottom-color: rgba(180, 40, 20, 0.5);
+  box-shadow: 0 0 18px rgba(160, 20, 0, 0.2);
+  animation: ocean-pressure-pulse 4s ease-in-out infinite;
+}
+@keyframes ocean-pressure-pulse {
+  0%, 100% { border-bottom-color: rgba(0, 180, 160, 0.35); }
+  50%       { border-bottom-color: rgba(200, 60, 20, 0.5);  box-shadow: 0 0 20px rgba(180, 40, 0, 0.2); }
+}
+
+/* SENSOR FAILURE: Dunkler Nebelschleier */
+body.biome-data-ocean.anomaly-sensor-blind::after {
+  content:    '';
+  position:   fixed;
+  inset:      0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 20%, rgba(0, 2, 8, 0.55) 70%);
+  pointer-events: none;
+  z-index:    5;
+  animation:  sensor-fog-pulse 6s ease-in-out infinite;
+}
+@keyframes sensor-fog-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1.0; }
+}
+
+/* FERAL NOMADS: Subtiles rotes Flimmern */
+body.biome-data-ocean.anomaly-feral #hud {
+  animation: feral-hud-flicker 0.5s steps(2) infinite;
+}
+@keyframes feral-hud-flicker {
+  0%   { opacity: 1.0; }
+  50%  { opacity: 0.92; }
+  100% { opacity: 1.0; }
+}
+
+/* BRITTLE LINKS: Leichtes Zittern der gesamten Szene */
+body.biome-data-ocean.anomaly-brittle #hud {
+  animation: brittle-hud-shake 0.12s ease-in-out infinite alternate;
+}
+@keyframes brittle-hud-shake {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(0.5px); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   OBJ-LINE ALS TIEFENMESSER — Anpassungen wenn Ocean aktiv
+   ══════════════════════════════════════════════════════════════════════════ */
+
+body.biome-data-ocean #obj-line {
+  font-family:    'Share Tech Mono', monospace;
+  letter-spacing: 3px;
+  font-size:      clamp(0.38rem, 1.1vw, 0.52rem);
+  color:          rgba(255, 255, 255, 0.45);
+  transition:     color 0.4s ease;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MOBILE — komprimiert die Ocean-UI für kleine Bildschirme
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 600px) {
+  .ocean-sonar-ping {
+    animation-duration: 2s;
+  }
+
+  body.biome-data-ocean #phase-name {
+    font-size: clamp(0.42rem, 2.5vw, 0.55rem);
+  }
+
+  .dive-btn {
+    font-size: clamp(0.42rem, 2.8vw, 0.55rem);
+    letter-spacing: 3px;
+  }
+}

@@ -1,0 +1,583 @@
+/**
+ * SYNAPSE v99 — Progressive UI / Anti-Clutter CSS
+ *
+ * Kontextuelle UI: Elemente existieren physisch, sind aber display:none
+ * bis JS die passenden body-Klassen setzt. Keine neuen Panels.
+ *
+ * Enthält:
+ *   - Sektor-Badge in der Topbar (neben #phase-name)
+ *   - Heat-Bar als 2px Hairline unter der Progress-Bar
+ *   - Pulse-Mode Badge als Flyout über dem Pulse-Button
+ *   - Overclock (☢) & Chronos-Shift (⏳) Icon-Buttons im Dock
+ *   - Mobile Flexbox-Fallback für das Dock
+ *   - Unified design tokens (font-size, height, gap) — siehe :root unten
+ */
+
+/* ──────────────────────────────────────────────────────────────────────────
+   0. UNIFIED DESIGN TOKENS — alle Progressive-UI-Elemente teilen sich
+      eine konsistente Skala (Höhe, Padding, Schrift, Radius), damit die
+      neuen Badges sich visuell nahtlos in Topbar + Dock einfügen.
+   ────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Chip-Skala — verwendet von #sector-badge, #pulse-mode-badge,
+     #sentience-badge, #cond-chip, #diff-badge */
+  --chip-h:        20px;
+  --chip-pad:      0 8px;
+  --chip-radius:   var(--panel-r-md, 10px);
+  --chip-fs:       var(--hud-fs-xs);
+  --chip-ls:       var(--hud-ls-tight);
+  --chip-gap:      5px;
+  --chip-bd:       1px solid rgba(80,140,255,.18);
+  --chip-bg:       rgba(40,80,180,.06);
+
+  /* Dock-Extras — sekundäre Icon-Buttons (Overclock, Chronos, …) */
+  --dock-extra-h:  36px;
+  --dock-extra-w:  40px;
+  --dock-extra-r:  var(--dock-btn-r, 10px);
+  --dock-extra-fs: 16px;
+
+  /* Heat-Bar / Hairline-Indikatoren */
+  --hairline-h:    2px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   1. SEKTOR-BADGE — neben #phase-name in der Topbar
+   ══════════════════════════════════════════════════════════════════════════ */
+
+#sector-badge {
+  display: none; /* Standard: unsichtbar */
+  align-items:   center;
+  gap:           5px;
+  padding:       2px 7px;
+  background:    rgba(255, 180, 40, 0.10);
+  border:        1px solid rgba(255, 180, 40, 0.28);
+  border-radius: 3px;
+  font-size:     9px;
+  font-family:   var(--font-mono, monospace);
+  letter-spacing: 0.1em;
+  color:         rgba(255, 200, 80, 0.85);
+  white-space:   nowrap;
+  transition:    opacity 0.4s ease, transform 0.3s ease;
+}
+
+/* Wird sichtbar wenn ein Sektor aktiv ist (JS setzt body.sector-active) */
+body.sector-active #sector-badge {
+  display: inline-flex;
+}
+
+/* Verschiedene Sektor-Typen */
+#sector-badge.sector-corrupted {
+  color:         rgba(255, 80, 40, 0.9);
+  border-color:  rgba(255, 60, 20, 0.4);
+  background:    rgba(255, 60, 20, 0.08);
+}
+#sector-badge.sector-resonance {
+  color:         rgba(60, 255, 200, 0.9);
+  border-color:  rgba(40, 220, 180, 0.4);
+  background:    rgba(40, 200, 160, 0.08);
+}
+#sector-badge.sector-data-ocean {
+  color:         rgba(60, 180, 255, 0.9);
+  border-color:  rgba(40, 150, 255, 0.4);
+  background:    rgba(20, 100, 255, 0.08);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   2. HEAT-BAR — 2px Hairline unter der bestehenden Progress-Bar
+      Zero vertikaler zusätzlicher Platz. Exakt gleiche Breite wie #hud-prog.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+#heat-bar-wrap {
+  display: none; /* Standard: unsichtbar */
+  position: relative;
+  height:   2px;
+  width:    100%;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 1px;
+  overflow: hidden;
+  margin-top: -1px; /* Direkt unter der Progress-Bar ohne Gap */
+}
+
+/* Sichtbar wenn Overclock aktiv (JS: body.overclock-active) */
+body.overclock-active #heat-bar-wrap {
+  display: block;
+}
+
+#heat-bar-fill {
+  height:        100%;
+  width:         0%;   /* Wird per JS gesetzt: heatBar.style.width = pct + '%' */
+  background:    linear-gradient(90deg, rgba(255, 100, 20, 0.8), rgba(255, 40, 0, 1));
+  border-radius: 1px;
+  box-shadow:    0 0 4px rgba(255, 60, 0, 0.6);
+  transition:    width 0.3s ease, background 0.4s ease;
+  will-change:   width;
+}
+
+/* Kritisch: rot pulsierend ab 80% */
+#heat-bar-fill.heat-critical {
+  background: rgba(255, 20, 0, 0.95);
+  animation:  heat-critical-pulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes heat-critical-pulse {
+  0%   { box-shadow: 0 0 4px rgba(255, 60, 0, 0.6); }
+  100% { box-shadow: 0 0 10px rgba(255, 0, 0, 0.9), 0 0 20px rgba(255, 40, 0, 0.4); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   3. PULSE-MODE BADGE — Flyout über dem Pulse-Button
+      Kein neues Panel. Schwebt direkt über #pulse-cd-wrap.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+#pulse-mode-badge {
+  display: none; /* Standard: unsichtbar */
+  position:    absolute;
+  bottom:      calc(100% + 4px); /* Direkt über dem Pulse-Button */
+  left:        50%;
+  transform:   translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+
+  padding:       2px 8px;
+  background:    rgba(0, 0, 0, 0.75);
+  border:        1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+  font-size:     9px;
+  font-family:   var(--font-mono, monospace);
+  letter-spacing: 0.12em;
+  color:         rgba(200, 200, 255, 0.8);
+  text-transform: uppercase;
+
+  transition:    opacity 0.25s ease, transform 0.25s ease;
+  animation:     mode-badge-appear 0.3s cubic-bezier(0.25, 0, 0.15, 1) both;
+}
+
+@keyframes mode-badge-appear {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Sichtbar wenn ein nicht-Standard Pulse-Mode aktiv ist */
+body.pulse-mode-active #pulse-mode-badge {
+  display: block;
+}
+
+/* Mode-spezifische Farben */
+#pulse-mode-badge.mode-scatter {
+  color:        rgba(100, 255, 200, 0.9);
+  border-color: rgba(60, 220, 180, 0.3);
+}
+#pulse-mode-badge.mode-burst {
+  color:        rgba(255, 200, 60, 0.9);
+  border-color: rgba(255, 180, 40, 0.3);
+}
+#pulse-mode-badge.mode-snipe {
+  color:        rgba(255, 120, 80, 0.9);
+  border-color: rgba(255, 100, 60, 0.3);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   4. OVERCLOCK (☢) & CHRONOS-SHIFT (⏳) ICON-BUTTONS
+      44×44px, exakt wie der Pulse-Button. display:none bis Epoch III.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+#btn-overclock,
+#btn-chronos {
+  display: none; /* Standard: unsichtbar */
+}
+
+/* P1 Fix 3.3 — Canonical #btn-overclock base/hover (moved from phase3.css) */
+#btn-overclock {
+  border-color: rgba(255, 60, 40, 0.40);
+  color:        rgba(255, 100, 80, 0.80);
+  transition:   border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+#btn-overclock:hover:not(.oc-active) {
+  border-color: rgba(255, 60, 40, 0.65);
+  color:        rgba(255, 120, 100, 1);
+  box-shadow:   0 0 8px rgba(255, 60, 40, 0.20);
+}
+
+/* Sichtbar ab Epoch III (JS: body.epoch-temporal oder body.overclock-unlocked) */
+body.overclock-unlocked #btn-overclock,
+body.epoch-temporal     #btn-overclock {
+  display: flex;
+}
+
+body.chronos-unlocked   #btn-chronos {
+  display: flex;
+}
+
+/* Stil: identisch zu .dock-btn, aber mit Epoch-III-Farbe */
+.dock-btn-epoch {
+  width:           44px;
+  height:          44px;
+  min-width:       44px;
+  border-radius:   6px;
+  border:          1px solid rgba(255, 200, 60, 0.28);
+  background:      rgba(255, 200, 60, 0.05);
+  color:           rgba(255, 220, 80, 0.82);
+  font-size:       18px;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  cursor:          pointer;
+  transition:      background 0.22s ease, border-color 0.22s ease, transform 0.12s ease;
+  position:        relative; /* Für Flyout-Badge */
+  flex-shrink:     0;
+}
+
+.dock-btn-epoch:hover {
+  background:    rgba(255, 200, 60, 0.12);
+  border-color:  rgba(255, 220, 80, 0.5);
+  transform:     scale(1.05);
+}
+
+.dock-btn-epoch:active {
+  transform: scale(0.96);
+}
+
+/* Overclock-Button: Rote Tint wenn Heat > 50% */
+body.heat-warning #btn-overclock {
+  border-color: rgba(255, 100, 20, 0.5);
+  color:        rgba(255, 140, 60, 0.92);
+  animation:    heat-btn-throb 1.5s ease-in-out infinite;
+}
+@keyframes heat-btn-throb {
+  0%, 100% { box-shadow: none; }
+  50%       { box-shadow: 0 0 10px rgba(255, 80, 0, 0.35); }
+}
+
+/* Mystery-Faktor: Icon-Buttons erscheinen mit kurzem Glow */
+@keyframes epoch-btn-unlock {
+  0%   { opacity: 0; transform: scale(0.85); box-shadow: 0 0 0 0 rgba(255,220,60,0.4); }
+  60%  { box-shadow: 0 0 16px 4px rgba(255,220,60,0.35); }
+  100% { opacity: 1; transform: scale(1);   box-shadow: none; }
+}
+
+body.overclock-unlocked #btn-overclock.just-unlocked,
+body.chronos-unlocked   #btn-chronos.just-unlocked {
+  animation: epoch-btn-unlock 0.7s cubic-bezier(0.25, 0, 0.15, 1) both;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   5. MOBILE — Dock als Flexbox wenn neue Buttons hinzukommen
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 600px) {
+  /* Ab Epoch III: Dock auf Flexbox umschalten */
+  body.epoch-temporal #mode-bar,
+  body.overclock-unlocked #mode-bar {
+    display:        flex !important;
+    flex-wrap:      nowrap;
+    gap:            4px;
+    overflow-x:     auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding:        0 4px;
+  }
+
+  body.epoch-temporal #mode-bar::-webkit-scrollbar,
+  body.overclock-unlocked #mode-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Mode-Badge auf Mobile: kleiner */
+  #pulse-mode-badge {
+    font-size:    8px;
+    padding:      2px 6px;
+    letter-spacing: 0.08em;
+  }
+
+  /* Heat-Bar auf Mobile: 1px statt 2px */
+  #heat-bar-wrap {
+    height: 1px;
+  }
+
+  /* Sektor-Badge auf Mobile: nur Icon */
+  #sector-badge .sector-label-text {
+    display: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   UTILITY: Smooth Icon-Reveal für alle display:none→flex Übergänge
+   ══════════════════════════════════════════════════════════════════════════ */
+
+#btn-overclock,
+#btn-chronos,
+#sector-badge,
+#heat-bar-wrap,
+#pulse-mode-badge {
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+body.sector-active     #sector-badge,
+body.overclock-active  #heat-bar-wrap,
+body.pulse-mode-active #pulse-mode-badge,
+body.overclock-unlocked #btn-overclock,
+body.epoch-temporal     #btn-overclock,
+body.chronos-unlocked   #btn-chronos {
+  opacity: 1;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   6. UNIFIED CHIP STYLE — sector / pulse-mode / cond / diff / sentience
+      Eine konsistente Pille (var(--chip-h) hoch) für alle Topbar-Chips.
+      Überschreibt die vorherigen Einzel-Stile aus topbar.css/widgets.css.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+#sector-badge,
+#pulse-mode-badge,
+#cond-chip,
+#diff-badge {
+  height:         var(--chip-h);
+  padding:        var(--chip-pad);
+  font-family:    'Share Tech Mono', monospace;
+  font-size:      var(--chip-fs);
+  letter-spacing: var(--chip-ls);
+  text-transform: uppercase;
+  border-radius:  var(--chip-radius);
+  border:         var(--chip-bd);
+  background:     var(--chip-bg);
+  color:          rgba(170, 215, 255, .85);
+  white-space:    nowrap;
+  flex-shrink:    0;
+  line-height:    1;
+}
+
+/* Inhalt der Chips horizontal zentriert */
+#sector-badge,
+#pulse-mode-badge {
+  display: none;            /* override durch body-Klasse → inline-flex */
+  align-items: center;
+  gap: var(--chip-gap);
+}
+body.sector-active     #sector-badge,
+body.pulse-mode-active #pulse-mode-badge { display: inline-flex; }
+
+/* Sektor-Badge im Phase-Name-Row (Topbar Mitte) — sitzt rechts neben
+   dem Phase-Namen ohne den Layout-Flow zu sprengen. */
+#phase-name-row #sector-badge {
+  margin-left: 2px;
+  align-self:  center;
+}
+
+/* Pulse-Mode-Badge — bleibt absoluter Flyout im Pulse-CD-Wrap.
+   Wir erzwingen die Position-Override hier nochmal sauber, falls das
+   Hostelement die default-Position nicht ändern konnte. */
+#pulse-cd-wrap { position: relative; }
+#pulse-mode-badge {
+  position:  absolute;
+  bottom:    calc(100% + 4px);
+  left:      50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   7. SENTIENCE-BADGE — kompakter Chip statt großem Block (Anti-Clutter)
+      Gehört in #hud-right und folgt der gleichen Höhen-/Schrift-Skala.
+      Sichtbar nur wenn body.sentience-unlocked oder .badge-active.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+#sentience-badge {
+  display:        none;
+  height:         var(--chip-h);
+  padding:        var(--chip-pad);
+  align-items:    center;
+  gap:            var(--chip-gap);
+  font-family:    'Share Tech Mono', monospace;
+  font-size:      var(--chip-fs);
+  letter-spacing: var(--chip-ls);
+  text-transform: uppercase;
+  border-radius:  var(--chip-radius);
+  border:         1px solid rgba(180, 100, 255, .22);
+  background:     rgba(120,  60, 200, .08);
+  color:          rgba(220, 180, 255, .85);
+  white-space:    nowrap;
+  line-height:    1;
+  transition:     border-color .35s, color .35s, background .35s;
+}
+#sentience-badge.badge-active,
+body.sentience-unlocked #sentience-badge { display: inline-flex; }
+
+#sentience-badge .badge-icon { font-size: 1.05em; line-height: 1; }
+#sentience-badge .badge-label,
+#sentience-badge #macronode-count,
+#sentience-badge #sentience-income { font-size: inherit; }
+#sentience-badge #macronode-count   { color: rgba(255,255,255,.78); }
+#sentience-badge #sentience-income  { color: rgba(120,255,200,.92); }
+#sentience-badge #synergy-strip {
+  display: inline-flex; gap: 3px; margin-left: 4px;
+}
+#sentience-badge #synergy-strip:not(.strip-visible) { display: none; }
+#sentience-badge .synergy-pip {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(180,140,255,.18);
+  border: 1px solid rgba(180,140,255,.30);
+  transition: background .25s, box-shadow .25s;
+}
+#sentience-badge .synergy-pip.pip-active {
+  background: rgba(220,180,255,.92);
+  box-shadow: 0 0 6px rgba(200,150,255,.55);
+}
+#sentience-badge.badge-active {
+  border-color: rgba(220,150,255,.50);
+  color:        rgba(240,210,255,.95);
+  background:   rgba(160, 90,255,.16);
+  box-shadow:   0 0 14px rgba(180,110,255,.18);
+}
+
+/* Gestalt-Mind: stärkerer Glow (späte-Spiel-Zustand) */
+body.gestalt-mind-active #sentience-badge,
+#sentience-badge.gestalt {
+  border-color: rgba(255,170,255,.55);
+  color:        rgba(255,225,255,1);
+  text-shadow:  0 0 10px rgba(255,170,255,.65);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   8. DOCK EXTRAS — sekundäre Icon-Buttons (Overclock, Chronos, …)
+      Einheitliche Größe, sichtbar nur wenn das jeweilige Feature freige-
+      schaltet ist. So wirkt die Action-Zone nie überladen.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.dock-btn-epoch,
+#btn-overclock,
+#btn-chronos {
+  width:  var(--dock-extra-w);
+  height: var(--dock-extra-h);
+  min-width: var(--dock-extra-w);
+  border-radius: var(--dock-extra-r);
+  font-size: var(--dock-extra-fs);
+  display: none;                              /* override → flex via body */
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  background:    rgba(255,255,255,.04);
+  border:        1px solid rgba(80,140,255,.16);
+  color:         rgba(180,210,255,.70);
+  transition: background .18s, border-color .18s, color .18s, transform .12s;
+}
+.dock-btn-epoch:hover,
+#btn-overclock:hover,
+#btn-chronos:hover {
+  background:   rgba(80,160,255,.12);
+  border-color: rgba(100,180,255,.34);
+  color:        rgba(220,240,255,.95);
+}
+.dock-btn-epoch:active,
+#btn-overclock:active,
+#btn-chronos:active { transform: scale(.92); }
+
+/* Reveal once unlocked */
+body.overclock-unlocked #btn-overclock,
+body.epoch-temporal     #btn-overclock,
+body.chronos-unlocked   #btn-chronos { display: inline-flex; }
+
+/* Aktiv-Zustand (OC läuft) */
+#btn-overclock.oc-active {
+  border-color: rgba(255,140, 60,.55);
+  background:   rgba(255,120, 30,.14);
+  color:        rgba(255,200,120,.98);
+  text-shadow:  0 0 10px rgba(255,140,40,.65);
+  box-shadow:   inset 0 0 12px rgba(255,140,40,.18);
+}
+body.heat-warning #btn-overclock {
+  border-color: rgba(255,100, 20,.55);
+  color:        rgba(255,160, 80,.95);
+  animation: heat-btn-throb 1.5s ease-in-out infinite;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   9. TOPBAR — Anti-Clutter: nur sichtbar was relevant ist
+      Stats die noch nicht freigeschaltet wurden (L2/L3/Bridges/Triangles)
+      sind per default ausgeblendet. JS setzt body.unlock-* nach Bedarf.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Default: ausblenden bis das jeweilige System freigeschaltet ist. */
+#br-stat,
+#tri-stat,
+#l3-stat,
+#br-chip,
+#tri-chip,
+#l3-chip                                                   { display: none; }
+body.unlock-bridges    #br-stat,
+body.unlock-bridges    #br-chip,
+body.l2-active         #br-stat,
+body.l2-active         #br-chip                            { display: inline-flex; }
+body.unlock-triangles  #tri-stat,
+body.unlock-triangles  #tri-chip,
+body.has-triangle      #tri-stat,
+body.has-triangle      #tri-chip                           { display: inline-flex; }
+body.unlock-l3         #l3-stat,
+body.unlock-l3         #l3-chip,
+body.l3-active         #l3-stat,
+body.l3-active         #l3-chip                            { display: inline-flex; }
+
+/* Diff-Badge nur sichtbar wenn Difficulty != normal (JS setzt .vis) */
+#diff-badge:not(.hard):not(.brutal):not(.vis) { display: none; }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   10. TOPBAR + DOCK MICRO-TIGHTENING — gleichmäßige Spacing/Heights
+   ══════════════════════════════════════════════════════════════════════════ */
+
+#hud-main-row { gap: 10px; }
+#hud-left,
+#hud-right    { gap: 6px; }
+#phase-name-row { gap: 8px; }
+
+/* Stats-Row leicht entdichten + saubere Trennung */
+#stats-row { gap: 2px; }
+.stat      { padding: 3px 8px; border-radius: var(--panel-r-sm, 6px); }
+
+/* Dock-Action-Zone enger: Action-Buttons + Extras teilen sich gleiche Höhe */
+#dock-action-zone   { gap: 6px; padding: 8px 10px max(10px, env(safe-area-inset-bottom, 0px)); }
+.mbtn               { height: 40px; min-width: 78px; padding: 0 14px; border-radius: var(--dock-btn-r, 10px); }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   11. MOBILE — kompakte Chips, weniger horizontaler Druck
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  :root {
+    --chip-h:        18px;
+    --chip-pad:      0 6px;
+    --dock-extra-w:  36px;
+    --dock-extra-h:  34px;
+  }
+  /* Sektor-Badge auf Mobile: nur Icon */
+  #sector-badge .sector-label-text { display: none; }
+}
+@media (max-width: 480px) {
+  /* Pulse-Mode Flyout etwas tiefer halten, damit es nicht in den Topbar ragt */
+  #pulse-mode-badge { font-size: 9px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   P1 Fix 3.7 — Tactical-Mode Overrides (centralised from phase2/3.css)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+body[data-tactical="on"] #sector-badge,
+body[data-tactical="on"] #pulse-mode-badge {
+  opacity: 0.4;
+  filter:  grayscale(0.7);
+}
+
+body[data-tactical="on"] #heat-bar-wrap  { opacity: 0.50; }
+body[data-tactical="on"] #boss-phase-dots { opacity: 0.45; }
+/* P3 Fix 5.4 — Respect prefers-reduced-motion in progressive-ui */
+@media (prefers-reduced-motion: reduce) {
+  #btn-overclock,
+  #btn-chronos { transition: none; }
+  .just-unlocked { animation: none !important; }
+}

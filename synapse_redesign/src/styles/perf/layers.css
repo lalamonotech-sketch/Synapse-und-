@@ -1,0 +1,39 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   SYNAPSE v99 — CSS @layer Order Declaration
+   ══════════════════════════════════════════════════════════════════════════
+
+   Diese Datei deklariert die Cascade-Layer-Reihenfolge für das gesamte
+   Projekt. Sie MUSS als erstes CSS geladen werden (vor allen @imports).
+
+   Layer-Reihenfolge (niedrigste → höchste Priorität):
+     base       → Reset, Shell, Tokens
+     animations → Keyframes, Awakening
+     hud        → Topbar, Dock, Boss, History, Widgets
+     screens    → Title, Gameplay, Win
+     panels     → Alle Overlay-Panels
+     fx         → Cinematic, Premium, Glass, Gameplay-FX
+     polish     → Consistency, Theme, HUD-Polish
+     systems    → Phase1, Phase2
+     mobile     → Mobile-Overrides (hohe Prio — braucht kein !important mehr)
+     a11y       → Accessibility, Performance-Overrides
+     perf-gpu   → GPU-Patch (höchste Prio außer hotfixes)
+     hotfixes   → Absolute Notfall-Overrides (ersetzt alle !important)
+
+   Nach dieser Deklaration werden alle @imports mit layer() annotiert.
+   Bestehende Dateien werden NICHT verändert — die Layer-Annotation
+   passiert ausschließlich in index.css.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@layer
+  base,
+  animations,
+  hud,
+  screens,
+  panels,
+  fx,
+  polish,
+  systems,
+  mobile,
+  a11y,
+  perf-gpu,
+  hotfixes;

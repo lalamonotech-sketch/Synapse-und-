@@ -1,0 +1,303 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   SYNAPSE v99 — GPU Animation Patch
+   ══════════════════════════════════════════════════════════════════════════
+
+   STRATEGIE:
+   A) padding-left → translateX (kein Layout-Thrash, läuft GPU-seitig)
+   B) Animated box-shadow → opacity auf ::before-Pseudo-Element ("baken")
+   C) Animationskosten-Freeze bei is-paused / statischen Menüs
+
+   WICHTIG: Diese Datei überschreibt mit @layer(perf-gpu) — kein !important nötig.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@layer perf-gpu {
+
+  /* ── A. padding-left → translateX ────────────────────────────────────────
+     Alle Menü-Items / Protokoll-Einträge / Option-Zeilen nutzen dieselbe
+     Shift-Geste. Wir ersetzen das Layout-Reflow durch GPU-Transform.
+
+     Betroffene Selektoren aus Audit:
+       .menu-item, .opt-row, #protocol-list li, .boss-perk-item,
+       .win-opt-item, .title-menu-item, .mbtn, .proto-item
+  ────────────────────────────────────────────────────────────────────────── */
+
+  /* 1 — Transition auf transform umstellen (überschreibt padding-left-Varianten) */
+  .menu-item,
+  .opt-row,
+  #protocol-list li,
+  .boss-perk-item,
+  .win-opt-item,
+  .title-menu-item,
+  .proto-item {
+    transition:
+      transform        var(--u-t-fast, .28s) cubic-bezier(.25,0,.15,1),
+      color            var(--u-t-fast, .28s),
+      background       var(--u-t-fast, .28s),
+      opacity          var(--u-t-fast, .28s);
+    /* Sicherstellen, dass kein padding-left-Transition übrig bleibt */
+    padding-left: unset; /* Wert wird unten neu gesetzt, statisch */
+  }
+
+  /* 2 — Hover/Active-Shift via transform statt padding */
+  .menu-item:hover,   .menu-item.active,
+  .opt-row:hover,     .opt-row.active,
+  #protocol-list li:hover,
+  .boss-perk-item:hover,
+  .win-opt-item:hover, .win-opt-item.active,
+  .title-menu-item:hover,
+  .proto-item.selected, .proto-item:hover {
+    transform: translateX(8px);
+  }
+
+  /* Protocol-Items hatten 18px Shift */
+  #protocol-list li:hover { transform: translateX(10px); }
+
+  /* Boss-Perks kleiner Shift (waren 6px padding) */
+  .boss-perk-item:hover { transform: translateX(6px); }
+
+  /* Statische Basis-Abstände (einmalig, kein Layout-Cost auf Hover) */
+  .menu-item,
+  .win-opt-item,
+  .title-menu-item,
+  .proto-item           { padding-left: 10px; }
+  .opt-row              { padding-left: 6px;  }
+  #protocol-list li     { padding-left: 8px;  }
+  .boss-perk-item       { padding-left: 8px;  }
+
+
+  /* ── B. Progress-Bars: width-Transition → scaleX ─────────────────────────
+     Alle fill-Elemente bekommen transform-origin:left + scaleX.
+     JS muss entsprechend umgestellt werden — siehe platform/stateSignals.js.
+
+     HINWEIS: Diese Regel setzt width auf 100% (statisch) und nutzt
+     scaleX() für den Füllstand. JS ruft setNodeScaleX(el, ratio) auf.
+  ────────────────────────────────────────────────────────────────────────── */
+
+  .pfreq-fill,
+  .rr-bar-fill,
+  .tpr-fill,
+  #pib-fill,
+  #prog-bar,
+  #sync-decay-fill,
+  #energy-mini-fill,
+  .boss-bar-inner,
+  .boss-hp-seg-fill,
+  .ar-hint-bar-fill,
+  .bl-research-fill,
+  .blueprint-progress-fill {
+    width:            100% !important;
+    transform-origin: left center;
+    transform:        scaleX(0);
+    transition:       transform var(--u-t-mid, .5s) cubic-bezier(.22,1,.36,1);
+    /* Entfernt den teuren width-Transition */
+  }
+
+  /* Kritische Bars (kurze Transition für Reaktivität) */
+  #energy-mini-fill    { transition-duration: .2s; }
+  #sync-decay-fill     { transition-duration: .2s; }
+  .boss-hp-seg-fill    { transition-duration: .12s; }
+
+  /* Boss-HP-Bar (war: transition:width .5s linear,background .8s) */
+  .boss-bar-inner      {
+    transition:
+      transform  .5s  linear,
+      background .8s;
+  }
+
+
+  /* ── C. Glow-Baking: animated box-shadow → ::before opacity ──────────────
+     Die teuersten kontinuierlichen Glows werden auf ein Pseudo-Element
+     ausgelagert. Das ::before-Element hat den finalen box-shadow statisch;
+     nur dessen opacity wird animiert — das ist GPU-only.
+
+     Keyframes für die opacity-Animation stehen in keyframes.css
+     (neu: glow-breathe-a / glow-breathe-b).
+  ────────────────────────────────────────────────────────────────────────── */
+
+  /* Alle betroffenen Elemente brauchen position:relative */
+  #boss-hud.vis,
+  #boss-hud.profile-ghost.vis,
+  #boss-hud.profile-sigma.vis,
+  #boss-hud.profile-parasite.vis,
+  .cl-slot.syncing .cl-dot,
+  #energy-stat.low-energy,
+  .mbtn.active,
+  #backbone-banner {
+    position: relative;
+    isolation: isolate;
+  }
+
+  /* ─ Boss-HUD breathe (Standard) ─ */
+  #boss-hud.vis {
+    box-shadow:    none;   /* Eigenen shadow entfernen */
+    animation:     none;
+  }
+  #boss-hud.vis::before {
+    content: '';
+    position: absolute; inset: 0;
+    pointer-events: none;
+    box-shadow: 2px 0 42px rgba(255,40,40,.14);
+    animation: glow-bake-breathe 1.8s ease-in-out infinite alternate;
+    border-radius: inherit;
+  }
+
+  /* ─ Boss-HUD Ghost ─ */
+  #boss-hud.profile-ghost.vis { box-shadow: none; animation: none; }
+  #boss-hud.profile-ghost.vis::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+    box-shadow: 2px 0 38px rgba(40,255,200,.12);
+    animation: glow-bake-breathe 1.8s ease-in-out infinite alternate;
+  }
+
+  /* ─ Boss-HUD Sigma ─ */
+  #boss-hud.profile-sigma.vis { box-shadow: none; animation: none; }
+  #boss-hud.profile-sigma.vis::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+    box-shadow: 2px 0 38px rgba(180,60,255,.12);
+    animation: glow-bake-breathe 1.8s ease-in-out infinite alternate;
+  }
+
+  /* ─ Boss-HUD Parasite ─ */
+  #boss-hud.profile-parasite.vis { box-shadow: none; animation: none; }
+  #boss-hud.profile-parasite.vis::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+    box-shadow: 0 0 32px rgba(100,255,40,.22);
+    animation: glow-bake-breathe 2.1s ease-in-out infinite alternate;
+  }
+
+  /* ─ Cluster-Dot Sync-Pulse ─ */
+  .cl-slot.syncing .cl-dot {
+    box-shadow: none;
+    animation:  none;
+  }
+  .cl-slot.syncing .cl-dot::before {
+    content: ''; position: absolute; inset: -2px; border-radius: inherit; pointer-events: none;
+    box-shadow: 0 0 14px rgba(255,198,58,.74);
+    animation: glow-bake-breathe .62s ease-in-out infinite;
+  }
+
+  /* ─ Low-Energy Puls ─ */
+  #energy-stat.low-energy {
+    box-shadow: none;
+    animation:  none;
+  }
+  #energy-stat.low-energy::before {
+    content: ''; position: absolute; inset: -1px; border-radius: 8px; pointer-events: none;
+    box-shadow: 0 0 0 2px rgba(255,60,40,.28), 0 0 14px rgba(255,40,20,.18);
+    animation: glow-bake-breathe 1.5s ease-in-out infinite;
+  }
+
+  /* ─ sc-breathe (Title-Screen Canvas Orb) ─ */
+  .sc-breathe {
+    animation: none;
+    /* Pseudo-Element Fallback — sc-breathe war auf dem Canvas-BG, kein ::before möglich
+       Wir verwenden opacity-Animation auf dem Element selbst (transform/opacity = GPU) */
+  }
+  .sc-breathe::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+    box-shadow: 0 0 32px rgba(60,255,140,.13), inset 0 0 28px rgba(0,0,0,.4);
+    animation: glow-bake-breathe 2s ease-in-out infinite;
+    opacity: 0;
+  }
+
+  /* ─ status-pulse-warn / crit — via ::before statt box-shadow ─ */
+  .status-pulse--warn,
+  .status-pulse--crit {
+    animation: none;
+    position: relative;
+  }
+  .status-pulse--warn::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    box-shadow: 0 0 0 3px rgba(255,200,60,.35);
+    animation: glow-bake-breathe 1.4s ease-in-out infinite;
+  }
+  .status-pulse--crit::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    box-shadow: 0 0 0 3px rgba(255,50,40,.45);
+    animation: glow-bake-breathe 1.0s ease-in-out infinite;
+  }
+
+  /* ─ Keyframe: universelle Glow-Breathe-Opacity ─ */
+  @keyframes glow-bake-breathe {
+    from { opacity: 0.2; }
+    to   { opacity: 1.0; }
+  }
+
+
+  /* ── D. animation-play-state: paused (is-paused / Menüs) ────────────────
+     Alle Endlos-Animationen werden eingefroren, wenn:
+     - body.is-paused (Pause-Overlay)
+     - body.on-title  (Title-Screen — keine Gameplay-Loops)
+     - body.on-win    (Win-Screen)
+     - body.on-draft  (Draft-Overlay)
+
+     Ausnahme: Entrance-Animationen (hud-fadein, dock-slidein, fade-in-up etc.)
+     sind ohnehin einmalig (.forwards) — kein Problem.
+  ────────────────────────────────────────────────────────────────────────── */
+
+  body.is-paused *,
+  body.is-paused *::before,
+  body.is-paused *::after {
+    animation-play-state: paused !important;
+  }
+
+  /* Title-Screen: orb-drift1/2 und alle breathe-Loops pausieren */
+  body.on-title .orb,
+  body.on-title .orb::before,
+  body.on-title .orb::after,
+  body.on-title .sc-breathe,
+  body.on-title .sc-breathe::before {
+    animation-play-state: paused;
+  }
+
+  /* Win/Draft: Gameplay-HUD-Glows pausieren (HUD ist sowieso unsichtbar) */
+  body.on-win *,
+  body.on-win *::before,
+  body.on-win *::after,
+  body.on-draft *,
+  body.on-draft *::before,
+  body.on-draft *::after {
+    animation-play-state: paused !important;
+  }
+
+
+  /* ── E. will-change: nur bei aktiver Animation setzen ───────────────────
+     Dauerhaftes will-change reserviert VRAM — auf iOS kann das nach 10+
+     Minuten zum Tab-Kill führen. Wir nutzen JS (willChangeHelper.js) um
+     will-change dynamisch zu setzen/entfernen.
+     
+     CSS-only-Fallback: will-change auf :hover/:focus beschränken.
+  ────────────────────────────────────────────────────────────────────────── */
+
+  /* Shell-Elemente: will-change nur wenn sie gerade in Transition sind */
+  #hud,
+  #ctrl-dock,
+  #pause-overlay,
+  #ai-hud {
+    will-change: auto; /* Default: kein permanentes VRAM-Lock */
+  }
+
+  /* GPU-Hint nur während tatsächlicher Sichtbarkeitsänderungen */
+  #hud.is-animating,
+  #ctrl-dock.is-animating,
+  #pause-overlay.is-animating,
+  #ai-hud.is-animating {
+    will-change: transform, opacity;
+  }
+
+  /* Canvas-Orbs: immer transform-basiert, kurzes will-change OK */
+  .orb { will-change: transform, opacity; }
+
+
+  /* ── F. Backdrop-Filter: Überlappungsschutz ─────────────────────────────
+     Wenn #ctrl-dock sichtbar UND ein Panel offen ist (body.panel-open),
+     entferne den backdrop-filter vom Dock. So nie zwei Filter übereinander.
+  ────────────────────────────────────────────────────────────────────────── */
+
+  body.panel-open #ctrl-dock {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(0, 3, 12, 0.97); /* Kompensierend opak */
+  }
+
+} /* end @layer perf-gpu */

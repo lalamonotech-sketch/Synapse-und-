@@ -1,0 +1,627 @@
+/* ══════════════════════════════════════════════════════════════════
+   SYNAPSE v99 — RESPONSIVE LAYOUT  (v99-r5)
+   Mobile-first: komprimiert & touch-optimiert
+   Desktop:      ausgedehnt, luftig, maus-optimiert
+
+   Breakpoints:
+     ≤ 380px   — Micro  (sehr kleine Phones, Galaxy Fold)
+     ≤ 480px   — Small  (iPhone SE, kleine Android)
+     ≤ 768px   — Mobile (alle Phones)
+     ≤ 1024px  — Tablet / großes Phone Landscape
+     ≥ 1024px  — Desktop (einsetzen)
+     ≥ 1280px  — Desktop M
+     ≥ 1600px  — Desktop L / 2K
+     ≥ 1920px  — Desktop XL / 4K-Scaling
+   ══════════════════════════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §A  GEMEINSAME GRUNDREGELN (gilt für alle Viewports)
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Touch-Action: verhindert Doppeltipp-Zoom auf allen Buttons */
+button, [role="button"], .mbtn, .tbtn, .menu-item,
+.pause-item, .diff-btn, .lang-btn { touch-action: manipulation; }
+
+/* Prevent iOS text-size adjustment */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §B  MOBILE  ≤ 768 px
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── B1 · TOPBAR ───────────────────────────────────────────────── */
+  #hud {
+    /* Hintergrund: leichter transparenter Übergang nach unten */
+    background: linear-gradient(
+      180deg,
+      rgba(1, 5, 20, .96) 0%,
+      rgba(1, 4, 16, .80) 75%,
+      transparent 100%
+    ) !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    padding-top: max(10px, env(safe-area-inset-top, 10px)) !important;
+    padding-left:  max(12px, env(safe-area-inset-left, 12px))  !important;
+    padding-right: max(12px, env(safe-area-inset-right, 12px)) !important;
+  }
+
+  #hud-main-row {
+    grid-template-columns: auto 1fr auto;
+    padding: max(8px, env(safe-area-inset-top, 8px)) 12px 5px;
+    gap: 6px;
+    min-height: 44px;
+  }
+
+  /* Phase-Name: lesbarer, nicht abgeschnitten */
+  #phase-name {
+    font-size: clamp(10px, 2.6vw, 13px);
+    letter-spacing: 3px;
+    max-width: min(180px, 38vw);
+  }
+
+  /* Layer/Condition Tags komprimiert */
+  #layer-tag { font-size: 9px; padding: 2px 8px; letter-spacing: 2px; }
+  #cond-chip { font-size: 9px; padding: 2px 7px; }
+  #diff-badge { display: none; } /* zu eng auf Mobile */
+
+  /* Stats: kleinere Chips */
+  .stat { padding: 2px 5px; font-size: 9px; }
+  .sv   { font-size: 10px; }
+  #energy-mini-bar { width: 24px; }
+
+  /* Progress-Row etwas enger */
+  #hud-prog-row { padding: 0 12px max(5px, env(safe-area-inset-top, 0px)); }
+  #prog-lbl, #agent-line { font-size: 9px; }
+
+
+  /* ── B2 · DOCK ─────────────────────────────────────────────────── */
+  #ctrl-dock {
+    position: fixed !important;
+    left:   0 !important;
+    right:  0 !important;
+    bottom: 0 !important;
+    transform: none !important;
+    width:  100% !important;
+    max-width: 100% !important;
+    border-radius: 0 !important;
+    border-left:   none !important;
+    border-right:  none !important;
+    border-bottom: none !important;
+    /* etwas schärferes Glas als Desktop-Variante */
+    backdrop-filter: blur(24px) saturate(1.8) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.8) !important;
+    padding-bottom: max(4px, env(safe-area-inset-bottom, 4px)) !important;
+  }
+
+  /* Type-Zone: kompakt, scrollbar, kein Wrap */
+  #dock-type-zone {
+    padding: 7px 10px 5px !important;
+    gap: 4px !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap !important;
+  }
+  #dock-type-zone::-webkit-scrollbar { display: none; }
+
+  /* Type-Buttons: genug Touch-Target */
+  .tbtn {
+    height: 36px !important;
+    min-width: 36px !important;
+    padding: 0 10px !important;
+    font-size: 9px !important;
+    letter-spacing: 1.5px !important;
+    flex-shrink: 0;
+  }
+
+  /* Action-Zone: etwas mehr Luft */
+  #dock-action-zone {
+    padding: 7px 10px max(8px, env(safe-area-inset-bottom, 8px)) !important;
+    gap: 5px !important;
+    justify-content: stretch !important;
+  }
+
+  /* Action-Buttons: gleich breit, gute Touch-Fläche */
+  .mbtn {
+    flex: 1 1 0 !important;
+    height: 44px !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    font-size: 9px !important;
+    letter-spacing: 2px !important;
+    padding: 0 10px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Hint-Pill: über dem Dock */
+  #hint {
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
+    font-size: 9px !important;
+    padding: 4px 14px !important;
+    letter-spacing: 2px !important;
+  }
+
+  /* AI-HUD: schmalere Panel-Breite */
+  #ai-hud {
+    width: clamp(130px, 28vw, 160px);
+    top: max(54px, calc(env(safe-area-inset-top, 0px) + 54px));
+    padding: 10px 12px 12px 14px;
+  }
+  #ai-stage-lbl, #ai-profile-lbl { font-size: 9px; letter-spacing: 2px; }
+
+
+  /* ── B3 · TITEL-SCREEN ─────────────────────────────────────────── */
+  #title-content {
+    padding: clamp(32px, 7vh, 60px) 20px;
+    padding-left: clamp(40px, 9vw, 64px);
+    width: 100%;
+    min-height: 100dvh; /* dynamic viewport height */
+  }
+  #title-main  { font-size: clamp(3.2rem, 17vw, 5.5rem) !important; }
+  #title-deco  { display: none; }
+  .menu-item   { padding: 12px 0; font-size: clamp(11px, 3vw, 13px); }
+  #title-secondary-row .menu-item { font-size: clamp(10px, 2.6vw, 12px); }
+
+  /* Pause-Button: gutes Touch-Target oben rechts */
+  #pause-btn {
+    top: max(10px, env(safe-area-inset-top, 10px)) !important;
+    right: max(12px, env(safe-area-inset-right, 12px)) !important;
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Toast: nicht zu breit */
+  #toast { max-width: min(88vw, 360px); }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §C  SMALL PHONE  ≤ 480 px
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+
+  /* Topbar: Center-Column (Phase-Name) ausblenden — zu eng */
+  #hud-main-row {
+    grid-template-columns: auto 1fr !important;
+    padding-left: max(10px, env(safe-area-inset-left, 10px)) !important;
+    padding-right: max(10px, env(safe-area-inset-right, 10px)) !important;
+    min-height: 40px !important;
+  }
+  #hud-center { display: none !important; }
+  /* Rechts: Stats horizontal statt Spalte */
+  #hud-right { flex-direction: row !important; gap: 2px !important; align-items: center !important; }
+
+  /* Sekundäre Stats ausblenden, nur Energie bleibt */
+  #link-stat, #tri-stat, #br-stat, #l3-stat,
+  #tri-chip, #br-chip, #l3-chip, #spine-stat, #spine-banner { display: none !important; }
+  #energy-mini-bar { width: 20px !important; }
+
+  /* Type-Zone: etwas enger */
+  #dock-type-zone { padding: 6px 8px 4px !important; }
+  .tbtn {
+    height: 34px !important;
+    min-width: 34px !important;
+    padding: 0 9px !important;
+    font-size: 9px !important;
+  }
+
+  /* Action-Buttons: volle Breite, taller */
+  .mbtn {
+    height: 46px !important;
+    border-radius: 8px !important;
+    font-size: 9px !important;
+  }
+
+  /* Hint näher am Dock */
+  #hint {
+    bottom: calc(66px + env(safe-area-inset-bottom, 0px)) !important;
+    font-size: 9px !important;
+    padding: 3px 12px !important;
+  }
+
+  /* Obj-Line und Now-Action enger */
+  #obj-line, #now-action {
+    max-width: min(86vw, 340px) !important;
+    font-size: 9px !important;
+  }
+
+  /* Missed-Flash kleiner */
+  #missed-flash { font-size: 10px !important; letter-spacing: 3px !important; }
+
+  /* Combo-HUD kompakter */
+  #combo-hud {
+    top: max(44px, calc(env(safe-area-inset-top, 0px) + 44px)) !important;
+  }
+
+  /* Draft-Karten: 2 pro Reihe */
+  #draft-cards { gap: 8px !important; }
+  .draft-card  { width: calc(50% - 4px) !important; min-width: 120px !important; padding: 14px 12px 12px !important; }
+
+  /* Settings-Box full-width */
+  #settings-box {
+    padding: clamp(28px, 6vh, 56px) 18px !important;
+    padding-left: clamp(32px, 8vw, 56px) !important;
+    width: 100% !important;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §D  MICRO  ≤ 380 px  (Galaxy Fold, ältere iPhones)
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 380px) {
+
+  /* Phase-Name ganz klein */
+  #phase-name { font-size: 10px !important; letter-spacing: 2.5px !important; }
+
+  /* Type-Bar: Wrap erlauben */
+  #dock-type-zone { flex-wrap: wrap !important; padding: 4px 6px 3px !important; }
+  .tbtn { height: 30px !important; min-width: 30px !important; padding: 0 7px !important; font-size: 8px !important; letter-spacing: 1px !important; }
+
+  /* Action-Buttons: stack wenn sehr eng */
+  .mbtn { font-size: 8px !important; letter-spacing: 1.5px !important; height: 42px !important; }
+
+  /* Titel kleiner */
+  #title-main { font-size: 3rem !important; }
+  #title-content { padding-left: 36px !important; }
+
+  /* AI-HUD weiter verstecken */
+  #ai-hud { display: none !important; }
+
+  /* Node-Tip: kein Überlaufen */
+  #node-tip { max-width: 78vw !important; white-space: normal !important; font-size: 8px !important; }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §E  LANDSCAPE PHONE  (Höhe ≤ 500 px, Querformat)
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-height: 500px) and (orientation: landscape) {
+
+  /* Topbar sehr kompakt */
+  #hud {
+    background: rgba(1, 4, 18, .96) !important;
+  }
+  #hud-main-row {
+    padding: max(4px, env(safe-area-inset-top, 4px)) 12px 3px !important;
+    min-height: 36px !important;
+  }
+  #phase-name { font-size: 10px !important; letter-spacing: 3px !important; margin-bottom: 0 !important; }
+  .stat { padding: 1px 4px !important; font-size: 8px !important; }
+  #hud-prog-row { padding-bottom: 2px !important; }
+
+  /* Dock: Einzeiliges Quer-Layout */
+  #ctrl-dock {
+    flex-direction: row !important;
+    align-items: center !important;
+    bottom: 0 !important;
+    left: max(0px, env(safe-area-inset-left, 0px)) !important;
+    right: max(0px, env(safe-area-inset-right, 0px)) !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+  }
+  #dock-type-zone {
+    border-bottom: none !important;
+    border-right: 1px solid rgba(80, 140, 255, .15) !important;
+    flex-shrink: 0;
+    max-width: 38vw;
+    padding: 5px 8px !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  #dock-action-zone {
+    padding: 5px 8px max(4px, env(safe-area-inset-bottom, 4px)) !important;
+    flex: 1;
+    justify-content: center !important;
+    gap: 4px !important;
+  }
+  .tbtn  { height: 30px !important; }
+  .mbtn  { height: 36px !important; max-width: 130px !important; }
+
+  /* Hint über dem Dock */
+  #hint { bottom: calc(48px + env(safe-area-inset-bottom, 0px)) !important; }
+
+  /* AI-HUD im Landscape ausblenden */
+  #ai-hud { display: none !important; }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §F  TABLET  768px – 1024px
+   ══════════════════════════════════════════════════════════════════ */
+@media (min-width: 769px) and (max-width: 1024px) {
+
+  /* Dock: zentriert, nicht full-width */
+  #ctrl-dock {
+    width: min(640px, calc(100vw - 40px)) !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
+    border-radius: 16px !important;
+  }
+
+  .tbtn { height: 34px !important; padding: 0 11px !important; }
+  .mbtn { height: 44px !important; max-width: 160px !important; }
+
+  /* Stats: etwas mehr Platz */
+  .stat { padding: 3px 6px !important; }
+  #energy-mini-bar { width: 28px !important; }
+
+  /* AI-HUD: normales Sizing */
+  #ai-hud { width: clamp(150px, 18vw, 175px); }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §G  DESKTOP  ≥ 1024px
+   Alles was bisher fehlte: Dock, Topbar, HUDs, Titel
+   ══════════════════════════════════════════════════════════════════ */
+@media (min-width: 1024px) {
+
+  /* ── G1 · TOPBAR ───────────────────────────────────────────────── */
+  #hud-main-row {
+    padding: max(12px, env(safe-area-inset-top, 12px)) 24px 8px;
+    gap: 12px;
+    min-height: 54px;
+  }
+
+  /* Phase-Name: größer, mehr Platz */
+  #phase-name {
+    font-size: clamp(13px, 1.1vw, 15px);
+    letter-spacing: 6px;
+    max-width: clamp(200px, 28vw, 340px);
+  }
+
+  /* Cond-Chip: sichtbar */
+  #cond-chip { font-size: 10px; padding: 3px 9px; }
+
+  /* Layer-Tag: etwas größer */
+  #layer-tag { font-size: 10px; padding: 3px 12px; letter-spacing: 3px; }
+
+  /* Diff-Badge: auf Desktop anzeigen */
+  #diff-badge { display: inline-flex !important; }
+
+  /* Stats: breiter, gut lesbar */
+  .stat { padding: 3px 8px; font-size: 11px; }
+  .sv   { font-size: 12px; }
+  #stats-row { gap: 2px; }
+  #energy-mini-bar { width: 40px; }
+
+  /* Progress-Bar: etwas breiter auf großen Screens */
+  #prog-wrap { width: min(320px, 28vw); }
+
+  /* ── G2 · CONTROL DOCK ─────────────────────────────────────────── */
+  #ctrl-dock {
+    width: min(680px, calc(100vw - 48px));
+    bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    border-radius: 18px;
+  }
+
+  #dock-type-zone { padding: 9px 12px 7px; gap: 5px; }
+  #dock-action-zone { padding: 9px 12px max(12px, env(safe-area-inset-bottom, 12px)); gap: 8px; justify-content: center; }
+
+  .tbtn { height: 34px; padding: 0 13px; font-size: 10px; letter-spacing: 2px; }
+  .mbtn { height: 46px; min-width: 100px; max-width: 200px; font-size: 11px; letter-spacing: 2px; }
+
+  /* Hint: gut positioniert über dem Dock */
+  #hint {
+    bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+    font-size: 10px;
+    padding: 5px 18px;
+    letter-spacing: 2.5px;
+  }
+
+  /* ── G3 · AI-HUD ───────────────────────────────────────────────── */
+  #ai-hud {
+    width: clamp(168px, 16vw, 200px);
+    top: max(68px, calc(env(safe-area-inset-top, 0px) + 68px));
+    padding: 14px 16px 16px 18px;
+  }
+  #ai-stage-lbl, #ai-profile-lbl { font-size: 10px; letter-spacing: 2.5px; }
+  .ai-bar-key { font-size: 10px; }
+  .ai-bar-val { font-size: 10px; }
+
+  /* ── G4 · SPIELCONTENT ─────────────────────────────────────────── */
+  #obj-line, #now-action {
+    max-width: min(560px, 42vw);
+    font-size: 11px;
+    letter-spacing: 3px;
+  }
+
+  /* Toast: angenehme Breite */
+  #toast { max-width: min(420px, 36vw); }
+
+  /* Boss-HUD */
+  #boss-hud-name { font-size: clamp(1.4rem, 2.2vw, 2.2rem); }
+  #boss-hud-label { font-size: 11px; letter-spacing: 3px; }
+
+  /* Pause-Button: korrekte Position */
+  #pause-btn {
+    top: max(14px, env(safe-area-inset-top, 14px)) !important;
+    right: 20px !important;
+  }
+
+  /* Node-Tip: breiter auf Desktop */
+  #node-tip { max-width: min(280px, 22vw); }
+
+  /* ── G5 · OVERLAYS (Pause, Settings, Info) ─────────────────────── */
+  /* Pause-Overlay: auf Desktop zentrierter Inhalt */
+  #pause-overlay .pause-inner,
+  .pause-inner {
+    max-width: 480px;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §H  DESKTOP M  ≥ 1280px
+   ══════════════════════════════════════════════════════════════════ */
+@media (min-width: 1280px) {
+
+  /* Topbar: mehr Luft */
+  #hud-main-row { padding-left: 32px; padding-right: 32px; }
+
+  /* Phase-Name: volle Größe erlaubt */
+  #phase-name {
+    font-size: clamp(13px, 1.05vw, 15px);
+    letter-spacing: 7px;
+    max-width: clamp(220px, 26vw, 360px);
+  }
+
+  /* Dock: etwas breiter */
+  #ctrl-dock { width: min(740px, calc(100vw - 64px)); }
+  #dock-action-zone { gap: 10px; }
+  .mbtn { max-width: 210px; font-size: 11px; }
+
+  /* Progress-Bar: gut skaliert */
+  #prog-wrap { width: min(380px, 30vw); }
+
+  /* Stat-Row: zeige alle sekundären Stats */
+  #link-stat, #tri-stat { display: inline-flex !important; }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §I  DESKTOP L  ≥ 1600px  (2K / QHD)
+   ══════════════════════════════════════════════════════════════════ */
+@media (min-width: 1600px) {
+
+  /* Topbar: mehr Padding, alle Stats sichtbar */
+  #hud-main-row { padding-left: 40px; padding-right: 40px; min-height: 58px; }
+  #stats-row { gap: 3px; }
+  .stat { padding: 4px 10px; font-size: 11px; }
+  #energy-mini-bar { width: 48px; }
+
+  /* Phase-Name: Maximum */
+  #phase-name { font-size: 15px; letter-spacing: 8px; max-width: 380px; }
+
+  /* Alle sekundären Stats sichtbar */
+  #br-stat, #l3-stat { display: inline-flex !important; }
+
+  /* Dock: leicht größer */
+  #ctrl-dock { width: min(800px, calc(100vw - 80px)); bottom: 20px; }
+  #dock-type-zone { padding: 10px 14px 8px; }
+  #dock-action-zone { padding: 10px 14px max(14px, env(safe-area-inset-bottom, 14px)); gap: 12px; }
+  .tbtn { height: 36px; font-size: 11px; padding: 0 14px; }
+  .mbtn { height: 50px; font-size: 12px; letter-spacing: 2.5px; max-width: 230px; }
+
+  /* Hint höher über Dock */
+  #hint { bottom: calc(98px + env(safe-area-inset-bottom, 0px)); font-size: 11px; padding: 6px 22px; }
+
+  /* AI-HUD: breiter */
+  #ai-hud { width: min(208px, 15vw); }
+
+  /* Obj/Now größer */
+  #obj-line, #now-action { font-size: 12px; letter-spacing: 3.5px; max-width: min(620px, 40vw); }
+
+  /* Progress-Bar: Max-Width */
+  #prog-wrap { width: min(440px, 28vw); }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §J  DESKTOP XL  ≥ 1920px  (Full-HD und größer)
+   ══════════════════════════════════════════════════════════════════ */
+@media (min-width: 1920px) {
+
+  /* Topbar zentriert in einem Container */
+  #hud-main-row { max-width: 1760px; margin: 0 auto; padding-left: 48px; padding-right: 48px; }
+
+  /* Dock: absolutes Maximum, perfekt zentriert */
+  #ctrl-dock { width: 860px; }
+  .mbtn { max-width: 240px; }
+
+  /* Titel-Screen: bessere Nutzung des großen Viewports */
+  #title-content {
+    padding-left: clamp(72px, 8vw, 120px);
+    width: min(700px, 40vw);
+  }
+  #title-main { font-size: clamp(7rem, 9vw, 11rem); }
+  #title-deco { width: clamp(320px, 44vw, 600px); }
+
+  /* AI-HUD: max Breite */
+  #ai-hud { width: 216px; padding: 16px 18px 18px 20px; }
+
+  /* Boss-HUD */
+  #boss-hud-name { font-size: 2.4rem; }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §K  MAUS/POINTER-INPUT  (Desktop-spezifische Hover-States)
+   ══════════════════════════════════════════════════════════════════ */
+@media (hover: hover) and (pointer: fine) {
+
+  /* Stats: Hover-Feedback für Tooltip-Trigger (2-D aus Review) */
+  .stat:hover .sv {
+    color: rgba(220, 255, 255, 1.0);
+    text-shadow: 0 0 10px rgba(100, 230, 255, .50);
+  }
+  .stat:hover {
+    background: rgba(100, 200, 255, .06);
+    border-color: rgba(80, 160, 255, .15);
+    cursor: default;
+  }
+
+  /* Layer-Tag: subtiles Hover-Glow */
+  #layer-tag:hover {
+    background: rgba(60, 120, 255, .14);
+    border-color: rgba(100, 180, 255, .32);
+    color: rgba(140, 210, 255, .90);
+  }
+
+  /* Type-Buttons: schnelleres Hover auf Desktop */
+  .tbtn { transition: all .10s cubic-bezier(.22, 1, .36, 1); }
+  .mbtn { transition: all .10s cubic-bezier(.22, 1, .36, 1); }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §L  TOUCH / COARSE-POINTER (Mobile / Tablet)
+   ══════════════════════════════════════════════════════════════════ */
+@media (pointer: coarse) {
+
+  /* Mindest-Touch-Targets für alle interaktiven Elemente */
+  .mbtn    { min-height: 44px !important; }
+  .tbtn    { min-height: 38px !important; }
+  #pause-btn { min-width: 44px !important; min-height: 44px !important; }
+  .menu-item { min-height: 44px !important; display: flex !important; align-items: center !important; }
+  .pause-item, .diff-btn, .lang-btn { min-height: 44px !important; }
+
+  /* Kein Hover-State auf Touch-Geräten */
+  .stat:hover {
+    background: transparent !important;
+    border-color: transparent !important;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §M  REDUCED MOTION  (über alle Breakpoints)
+   ══════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .08s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   §N  SAFE-AREA UNIVERSELL  (notched Geräte, alle Viewports)
+   ══════════════════════════════════════════════════════════════════ */
+#hud {
+  padding-top: max(8px, env(safe-area-inset-top, 0px));
+  padding-left: max(10px, env(safe-area-inset-left, 0px));
+  padding-right: max(10px, env(safe-area-inset-right, 0px));
+}
+#ctrl-dock {
+  padding-left:  max(8px, env(safe-area-inset-left, 0px));
+  padding-right: max(8px, env(safe-area-inset-right, 0px));
+}

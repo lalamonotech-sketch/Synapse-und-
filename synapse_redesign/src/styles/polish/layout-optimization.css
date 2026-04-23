@@ -1,0 +1,524 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   SYNAPSE v100 — MASTER LAYOUT & SPACE OPTIMIZATION PATCH
+   Performance-optimised rewrite:
+   • Zero !important — @layer polish already wins over hud/panels/fx
+   • Token deduplication — reuses --u-panel-* from consistency.css
+   • contain: layout style on static panels (no reflow budget)
+   • will-change only on elements that actually animate
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@layer polish {
+
+  /* ── 1. LAYOUT TOKENS (additive — do NOT redeclare --glass-* duplicates) ── */
+  :root {
+    --lo-gap:      clamp(8px, 1.2vw, 16px);
+    --lo-top-h:    42px;
+    --lo-dock-h:   52px;
+    --lo-panel-w:  240px;
+
+    /* Radii — compact scale */
+    --r-sm:   4px;
+    --r-md:   8px;
+    --r-lg:   12px;
+    --r-pill: 999px;
+  }
+
+
+  /* ── 2. TOP BAR (Ultra-Slim) ── */
+  #hud {
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: auto;
+    min-height: var(--lo-top-h);
+    padding: env(safe-area-inset-top, 0px) var(--lo-gap) 0;
+    /* Gradient replaces solid bg — no backdrop-filter cost on top bar */
+    background: linear-gradient(
+      180deg,
+      rgba(0,2,8,.95)  0%,
+      rgba(0,2,8,.40) 60%,
+      transparent     100%
+    );
+    border-bottom: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+    contain: layout style;
+  }
+
+  #hud-main-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 6px 0 2px;
+    pointer-events: auto;
+  }
+
+  /* Centred phase label */
+  #hud-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    will-change: transform; /* used by phase-transition animations */
+  }
+
+  #phase-name {
+    font-size: 14px;
+    letter-spacing: 4px;
+    margin: 0;
+    line-height: 1;
+  }
+
+  /* Compact stat chips — override consistency.css sizing */
+  #stats-row {
+    display: flex;
+    gap: 6px;
+  }
+
+  .stat {
+    padding: 3px 10px;
+    font-size: 11px;
+    height: 26px;
+    border-radius: var(--r-sm);
+  }
+
+  /* Progress bars */
+  #hud-prog-row {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 4px 0;
+    pointer-events: auto;
+  }
+
+  #prog-wrap,
+  #sync-decay-bar-wrap,
+  #heat-bar-wrap {
+    height: 3px;
+    border-radius: 2px;
+    margin-bottom: 2px;
+  }
+
+
+  /* ── 3. CONTROL DOCK (Console style — centred pill) ── */
+  #ctrl-dock {
+    position: fixed;
+    bottom: var(--lo-gap);
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    min-width: 320px;
+    max-width: calc(100vw - var(--lo-gap) * 2);
+
+    /* Reuse design-system tokens */
+    background: var(--u-panel-bg);
+    backdrop-filter: var(--u-panel-blur);
+    -webkit-backdrop-filter: var(--u-panel-blur);
+    border: 1px solid var(--u-panel-border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--u-panel-shadow);
+
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 50;
+    pointer-events: auto;
+    contain: layout style;
+    will-change: transform; /* dock-rise animation in hud/dock.css */
+  }
+
+  #dock-type-zone {
+    padding: 2px 6px 6px;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    justify-content: center;
+  }
+
+  #dock-action-zone {
+    padding: 0;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  /* Unified button heights */
+  .mbtn,
+  #pulse-cd-wrap {
+    height: 40px;
+    min-height: 40px;
+    border-radius: var(--r-md);
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 0 16px;
+    margin: 0;
+  }
+
+  .tbtn {
+    height: 32px;
+    min-height: 32px;
+    border-radius: var(--r-sm);
+    font-size: 10px;
+    padding: 0 12px;
+    letter-spacing: 1.5px;
+  }
+
+  #btn-pulse,
+  #btn-train,
+  .dock-btn-epoch {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+    border-radius: var(--r-md);
+  }
+
+
+  /* ── 4. SIDE PANELS — shared base ── */
+  #ai-hud,
+  #l3-hud,
+  #active-projects-hud,
+  #history-panel,
+  #ql-panel,
+  #nomad-hud,
+  #boss-hud {
+    position: fixed;
+    z-index: 40;
+    background: var(--u-panel-bg);
+    backdrop-filter: var(--u-panel-blur);
+    -webkit-backdrop-filter: var(--u-panel-blur);
+    border: 1px solid var(--u-panel-border);
+    border-radius: var(--u-panel-r);
+    padding: 12px 16px;
+    box-shadow: var(--u-panel-shadow);
+    pointer-events: none;
+    contain: layout style;
+  }
+
+  /* Internal interactive elements */
+  #history-panel button,
+  #history-panel a { pointer-events: auto; }
+
+  /* Top-right */
+  #ai-hud {
+    top: calc(var(--lo-top-h) + var(--lo-gap) + 10px);
+    right: var(--lo-gap);
+    left: auto;
+    width: var(--lo-panel-w);
+    border-left: 2px solid rgba(80,160,255,.5);
+    transform: none;
+  }
+
+  /* Top-left */
+  #l3-hud {
+    top: calc(var(--lo-top-h) + var(--lo-gap) + 10px);
+    left: var(--lo-gap);
+    right: auto;
+    width: var(--lo-panel-w);
+    border-right: 2px solid rgba(80,255,160,.5);
+    transform: none;
+  }
+
+  /* Top-centre */
+  #boss-hud {
+    top: calc(var(--lo-top-h) + var(--lo-gap) + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    min-width: 320px;
+    text-align: center;
+    will-change: transform; /* boss-intro slide */
+  }
+
+  /* Bottom-left */
+  #active-projects-hud {
+    bottom: calc(var(--lo-dock-h) + var(--lo-gap) * 2 + 30px);
+    left: var(--lo-gap);
+    width: var(--lo-panel-w);
+    border-left: 2px solid rgba(140,80,255,.5);
+  }
+
+  #ql-panel {
+    bottom: calc(var(--lo-dock-h) + var(--lo-gap) * 2 + 30px);
+    left: var(--lo-gap);
+    width: var(--lo-panel-w);
+  }
+
+  /* Bottom-right */
+  #history-panel {
+    bottom: calc(var(--lo-dock-h) + var(--lo-gap) * 2 + 30px);
+    right: var(--lo-gap);
+    width: var(--lo-panel-w);
+  }
+
+  #nomad-hud {
+    bottom: calc(var(--lo-dock-h) + var(--lo-gap) * 2 + 30px);
+    right: var(--lo-gap);
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  /* Floating hint pill */
+  #hint {
+    bottom: calc(var(--lo-dock-h) + var(--lo-gap) * 2 + 15px);
+    padding: 6px 18px;
+    font-size: 11px;
+    border-radius: var(--r-pill);
+    background: var(--u-panel-bg);
+    backdrop-filter: var(--u-panel-blur);
+    border: 1px solid var(--u-panel-border);
+  }
+
+  /* Toast notification */
+  #toast {
+    top: calc(var(--lo-top-h) + var(--lo-gap) * 2);
+    padding: 12px 24px;
+    border-radius: var(--r-md);
+    will-change: opacity, transform;
+  }
+
+
+  /* ── 5. TYPOGRAPHY — panel headers & sub-labels ── */
+  #ai-profile-lbl,
+  #l3-hud-header,
+  #ap-hud-label,
+  #ql-name,
+  .hp-header {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  #ai-stage-lbl,
+  #l3-hud-label,
+  .ap-hud-row,
+  .l3o,
+  .hp-row,
+  .ai-bar-key,
+  .ai-bar-val {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,.70);
+    line-height: 1.4;
+  }
+
+  #boss-hud-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 4px;
+    margin-bottom: 6px;
+  }
+
+
+  /* ── 6. PAUSE BUTTON ── */
+  #pause-btn {
+    position: fixed;
+    top: calc(var(--lo-gap) + env(safe-area-inset-top, 0px));
+    right: var(--lo-gap);
+    width: 40px;
+    height: 40px;
+    border-radius: var(--r-sm);
+    background: var(--u-panel-bg);
+    border: 1px solid var(--u-panel-border);
+    backdrop-filter: var(--u-panel-blur);
+    -webkit-backdrop-filter: var(--u-panel-blur);
+    z-index: 99;
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    contain: layout style;
+  }
+
+
+  /* ── 7. OVERLAYS (Draft / Settings / Info / Protocol / Pause) ── */
+  .shell-content,
+  #draft-inner,
+  #settings-box,
+  #info-box,
+  #protocol-box,
+  #pause-box {
+    background: linear-gradient(160deg, rgba(2,6,18,.95), rgba(1,2,8,.98));
+    border: 1px solid rgba(80,160,255,.2);
+    border-radius: var(--r-lg);
+    box-shadow: 0 16px 64px rgba(0,0,0,.8);
+    padding: 40px 48px;
+    max-width: 600px;
+    margin: 0 auto;
+    contain: layout style;
+  }
+
+
+  /* ══════════════════════════════════════════════════════════════════
+     8. MOBILE (≤ 768 px)
+     NOTE: This media query runs inside @layer polish — no !important
+     needed; mobile layer below will override if needed.
+     ══════════════════════════════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    :root {
+      --lo-gap:     6px;
+      --lo-top-h:   38px;
+      --lo-panel-w: 160px;
+    }
+
+    #hud-main-row { padding: 0; }
+
+    /* Free up screen — hide side chrome */
+    #hud-left,
+    #hud-right { display: none; }
+
+    #hud-center {
+      position: relative;
+      left: 0;
+      transform: none;
+      width: 100%;
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 0 10px;
+    }
+
+    #phase-name {
+      font-size: 12px;
+      letter-spacing: 2px;
+    }
+
+    /* Full-width floor dock */
+    #ctrl-dock {
+      bottom: 0;
+      left: 0;
+      transform: none;
+      width: 100%;
+      max-width: 100%;
+      border-radius: var(--r-md) var(--r-md) 0 0;
+      padding: 6px;
+      padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+      will-change: auto; /* no dock-rise on mobile */
+    }
+
+    /* Larger touch targets (≥ 44 px AA) */
+    .mbtn {
+      height: 48px;
+      min-height: 48px;
+      padding: 0 8px;
+      font-size: 10px;
+      flex: 1;
+    }
+
+    #btn-pulse,
+    #btn-train,
+    .dock-btn-epoch {
+      height: 48px;
+      min-height: 48px;
+      width: 48px;
+    }
+
+    .tbtn {
+      height: 38px;
+      font-size: 9px;
+      padding: 0 6px;
+    }
+
+    /* Corner panels — compact */
+    #ai-hud,
+    #l3-hud,
+    #active-projects-hud,
+    #history-panel,
+    #ql-panel {
+      padding: 8px 10px;
+      border-radius: var(--r-sm);
+      width: auto;
+      max-width: 140px;
+    }
+
+    #ai-profile-lbl,
+    #l3-hud-header,
+    #ap-hud-label,
+    #ql-name,
+    .hp-header {
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+
+    #ai-stage-lbl,
+    #l3-hud-label,
+    .ap-hud-row,
+    .l3o,
+    .hp-row,
+    .ai-bar-key,
+    .ai-bar-val {
+      font-size: 9px;
+      letter-spacing: 1px;
+      line-height: 1.2;
+    }
+
+    .ai-bar-track { height: 2px; }
+
+    #boss-hud {
+      top: 42px;
+      min-width: 220px;
+      padding: 6px 10px;
+    }
+
+    #boss-hud-name { font-size: 20px; }
+
+    /* Shift bottom panels above the mobile dock */
+    #active-projects-hud,
+    #ql-panel,
+    #history-panel,
+    #nomad-hud,
+    #history-toggle {
+      bottom: calc(75px + env(safe-area-inset-bottom, 0px));
+    }
+
+    #hint {
+      bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+      font-size: 10px;
+      padding: 6px 12px;
+    }
+
+    /* Pause button */
+    #pause-btn {
+      width: 36px;
+      height: 36px;
+      top: max(4px, env(safe-area-inset-top, 4px));
+      right: 6px;
+    }
+
+    /* Overlays */
+    .shell-content,
+    #draft-inner,
+    #settings-box,
+    #info-box,
+    #protocol-box,
+    #pause-box {
+      padding: 24px 20px;
+      width: calc(100% - 16px);
+      max-width: 100%;
+      border-radius: var(--r-md);
+    }
+
+    #draft-title,
+    #settings-title,
+    #info-title,
+    #protocol-title,
+    #pause-title {
+      font-size: 32px;
+      letter-spacing: 3px;
+    }
+  }
+}

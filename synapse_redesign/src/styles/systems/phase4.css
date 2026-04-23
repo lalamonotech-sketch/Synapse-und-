@@ -1,0 +1,235 @@
+/**
+ * SYNAPSE v99 — Phase 4: Sentience CSS
+ *
+ * Styles for:
+ *   - Gestalt Mind body-class effects
+ *   - Sentience HUD badge (#sentience-badge)
+ *   - Macro-Node count readout (#macronode-count)
+ *   - Active synergy strip (#synergy-strip, .synergy-pip)
+ *   - Epoch IV Sentience global palette overrides
+ *   - Elite cluster visual variants (hive_nexus, gestalt_fragment, resonance_anchor)
+ */
+
+/* ── CSS Tokens ─────────────────────────────────────────────────────────── */
+
+:root {
+  --sentience-opacity:   0;        /* 0→1 when Sentience epoch unlocked    */
+  --gestalt-opacity:     0;        /* 0→1 when Gestalt Mind fires          */
+  --s4-synergy-color:    rgba(255, 136, 255, 0.85);
+  --s4-gestalt-glow:     rgba(255, 255, 255, 0.25);
+  --s4-triad-color:      rgba(255, 221, 85, 0.9);
+  --s4-spine-color:      rgba(68, 255, 204, 0.9);
+  --s4-ring-color:       rgba(255, 136, 255, 0.9);
+  --s4-macro-color:      rgba(200, 120, 255, 0.85);
+}
+
+/* ── Epoch IV body class — ambient sentience glow ───────────────────────── */
+
+body.epoch-sentience #hud {
+  border-bottom-color: rgba(255, 136, 255, 0.45);
+  box-shadow: 0 0 18px rgba(170, 68, 255, 0.18);
+  transition: border-bottom-color 1.2s ease, box-shadow 1.2s ease;
+}
+
+body.epoch-sentience .dock-btn {
+  border-color: rgba(200, 100, 255, 0.35);
+}
+
+body.epoch-sentience #layer-tag {
+  color: rgba(255, 140, 255, 0.9);
+  text-shadow: 0 0 8px rgba(255, 100, 255, 0.55);
+}
+
+/* ── Gestalt Mind active state ─────────────────────────────────────────── */
+
+@keyframes gestalt-ambient-pulse {
+  0%   { opacity: calc(var(--gestalt-opacity) * 0.60); }
+  50%  { opacity: calc(var(--gestalt-opacity) * 1.00); }
+  100% { opacity: calc(var(--gestalt-opacity) * 0.60); }
+}
+
+@keyframes gestalt-hud-shimmer {
+  0%   { border-bottom-color: rgba(255, 100, 255, 0.50); }
+  33%  { border-bottom-color: rgba(200, 255, 255, 0.60); }
+  66%  { border-bottom-color: rgba(255, 255, 150, 0.55); }
+  100% { border-bottom-color: rgba(255, 100, 255, 0.50); }
+}
+
+body.gestalt-mind-active #hud {
+  animation: gestalt-hud-shimmer 3s ease-in-out infinite;
+}
+
+body.gestalt-mind-active #sentience-badge {
+  background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(200,100,255,0.22));
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
+  animation: gestalt-badge-throb 1.8s ease-in-out infinite;
+}
+
+@keyframes gestalt-badge-throb {
+  0%, 100% { box-shadow: 0 0 8px rgba(255,255,255,0.3), 0 0 20px rgba(200,100,255,0.2); }
+  50%       { box-shadow: 0 0 16px rgba(255,255,255,0.6), 0 0 36px rgba(200,100,255,0.45); }
+}
+
+/* ── Sentience HUD Badge ────────────────────────────────────────────────── */
+
+#sentience-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px 2px 5px;
+  background: rgba(170, 68, 255, 0.14);
+  border: 1px solid rgba(200, 100, 255, 0.38);
+  border-radius: 4px;
+  font-size: 9.5px;
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.08em;
+  color: rgba(220, 150, 255, 0.88);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease, color 0.3s, background 0.4s;
+  will-change: opacity;
+}
+
+#sentience-badge.badge-active {
+  opacity: 1;
+}
+
+#sentience-badge .badge-icon {
+  font-size: 10px;
+}
+
+/* ── Macro-Node count bubble ────────────────────────────────────────────── */
+
+#macronode-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 16px;
+  padding: 0 4px;
+  background: rgba(200, 100, 255, 0.22);
+  border: 1px solid rgba(200, 100, 255, 0.45);
+  border-radius: 3px;
+  font-size: 9px;
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  color: rgba(230, 170, 255, 0.95);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+#macronode-count.mn-visible {
+  opacity: 1;
+}
+
+/* ── Synergy Pip Strip ──────────────────────────────────────────────────── */
+
+#synergy-strip {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+#synergy-strip.strip-visible {
+  opacity: 1;
+}
+
+.synergy-pip {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.08);
+  opacity: 0.35;
+  transition: background 0.25s, opacity 0.25s, box-shadow 0.25s;
+}
+
+.synergy-pip.pip-active {
+  opacity: 1;
+  box-shadow: 0 0 6px currentColor;
+}
+
+.synergy-pip.pip-triad      { color: var(--s4-triad-color); background: rgba(255,221,85,0.3); }
+.synergy-pip.pip-spine_lock { color: var(--s4-spine-color); background: rgba(68,255,204,0.3); }
+.synergy-pip.pip-ring       { color: var(--s4-ring-color);  background: rgba(255,136,255,0.3); }
+
+/* ── Phase 4 Elite cluster visual variants ─────────────────────────────── */
+
+/* Hive Nexus — warm magenta throb */
+@keyframes hive-nexus-throb {
+  0%, 100% { opacity: 0.55; box-shadow: none; }
+  50%       { opacity: 1.00; box-shadow: 0 0 16px rgba(255,136,255,0.65); }
+}
+
+.cluster-elite-hive_nexus {
+  animation: hive-nexus-throb 1.5s ease-in-out infinite;
+  filter: hue-rotate(10deg) brightness(1.3);
+}
+
+/* Gestalt Fragment — cold white pulse */
+@keyframes gestalt-fragment-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1.0; filter: brightness(2); }
+}
+
+.cluster-elite-gestalt_fragment {
+  animation: gestalt-fragment-pulse 2.2s ease-in-out infinite;
+}
+
+/* Resonance Anchor — teal ripple */
+@keyframes resonance-ripple {
+  0%   { opacity: 0.5; transform: scale(1.0);   }
+  40%  { opacity: 1.0; transform: scale(1.08);  }
+  100% { opacity: 0.5; transform: scale(1.0);   }
+}
+
+.cluster-elite-resonance_anchor {
+  animation: resonance-ripple 1.2s ease-in-out infinite;
+}
+
+/* ── Sentience income readout (tiny label near sentience-badge) ─────────── */
+
+#sentience-income {
+  font-size: 8.5px;
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.05em;
+  color: rgba(200, 160, 255, 0.65);
+  pointer-events: none;
+  transition: color 0.3s;
+}
+
+body.gestalt-mind-active #sentience-income {
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 0 8px rgba(255,255,255,0.55);
+}
+
+/* ── Epoch IV Sentience — topbar accent animation ───────────────────────── */
+
+body.epoch-sentience #stats-row {
+  animation: sentience-stat-breathe 3.5s ease-in-out infinite;
+}
+
+@keyframes sentience-stat-breathe {
+  0%, 100% { opacity: 0.90; }
+  50%       { opacity: 1.00; }
+}
+
+/* ── Gestalt Mind — full viewport ambient (behind canvas) ────────────────── */
+
+body.gestalt-mind-active::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(200, 100, 255, calc(var(--gestalt-opacity) * 0.07)) 0%,
+    transparent 70%
+  );
+  animation: gestalt-ambient-pulse 4s ease-in-out infinite;
+}

@@ -1,0 +1,155 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   SYNAPSE v99 — Phase 3: Overclocking & Heat / Boss Corruption
+   ══════════════════════════════════════════════════════════════════════════
+   Layer: systems  (imported via index.css @layer(systems))
+   Depends on: tokens.css, boss.css, dock.css
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Overclock Button in Dock (P1 Fix 3.3) ──────────────────────────────── */
+/* Base/hover styles canonical in progressive-ui.css — only animation + state remain here */
+
+#btn-overclock.oc-active {
+  background:   linear-gradient(180deg, rgba(200, 40, 20, 0.30) 0%, rgba(120, 10, 10, 0.10) 100%);
+  border-color: rgba(255, 60, 40, 0.80);
+  color:        #ff5c5c;
+  box-shadow:   0 0 16px rgba(255, 60, 40, 0.40),
+                inset 0 0 8px rgba(255, 40, 20, 0.20);
+  animation:    oc-throb 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes oc-throb {
+  from { text-shadow: 0 0  8px rgba(255, 60, 40, 0.50); }
+  to   { text-shadow: 0 0 16px rgba(255, 60, 40, 0.90),
+                      0 0 24px rgba(255, 20, 20, 0.40); }
+}
+
+/* Brownout: OC button muted, disabled look */
+body.brownout-active #btn-overclock {
+  opacity:      0.40;
+  border-color: rgba(255, 60, 40, 0.20);
+  color:        rgba(255, 80, 60, 0.40);
+  animation:    none;
+  cursor:       not-allowed;
+}
+
+/* ── Heat-Bar rules moved to progressive-ui.css (P0 Fix 2.3) */
+
+/* ── Boss Phase Dots HUD ─────────────────────────────────────────────────── */
+
+#boss-phase-dots {
+  display:        flex;
+  align-items:    center;
+  justify-content: center;
+  gap:            6px;
+  margin-top:     4px;
+}
+
+/* Base dot */
+.bpd {
+  width:         8px;
+  height:        8px;
+  border-radius: 50%;
+  border:        1px solid rgba(255, 255, 255, 0.20);
+  transition:    background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/* Pending (future phase) */
+.bpd.bpd-pending {
+  background:   rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Active (current phase) — inherits boss color via data-boss-profile */
+.bpd.bpd-active {
+  background:   var(--boss-accent, rgba(255, 80, 60, 0.80));
+  border-color: var(--boss-accent, rgba(255, 80, 60, 0.90));
+  box-shadow:   0 0 8px var(--boss-accent, rgba(255, 80, 60, 0.60));
+  animation:    bpd-pulse 1s ease-in-out infinite alternate;
+}
+
+/* Done (completed phase) */
+.bpd.bpd-done {
+  background:   rgba(255, 255, 255, 0.40);
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow:   none;
+}
+
+@keyframes bpd-pulse {
+  from { box-shadow: 0 0  5px var(--boss-accent, rgba(255, 80, 60, 0.50)); }
+  to   { box-shadow: 0 0 12px var(--boss-accent, rgba(255, 80, 60, 0.90)); }
+}
+
+/* Phase label colour per phase (boss.css extends these) */
+#boss-phase-lbl.phase-1 { color: rgba(255, 200, 100, 0.90); }
+#boss-phase-lbl.phase-2 { color: rgba(255, 140,  60, 0.95); }
+#boss-phase-lbl.phase-3 { color: rgba(255,  60,  40, 1.00);
+                           text-shadow: 0 0 10px rgba(255, 60, 40, 0.60); }
+
+/* Boss color tokens per profile */
+body[data-boss-profile="ghost_matrix"]      { --boss-accent: rgba( 68, 255, 204, 0.85); }
+body[data-boss-profile="sigma_recursive"]   { --boss-accent: rgba(200,  68, 255, 0.85); }
+body[data-boss-profile="vortex_architect"]  { --boss-accent: rgba(255, 170,   0, 0.85); }
+body[data-boss-profile="entropy_field"]     { --boss-accent: rgba( 34,  85, 153, 0.85); }
+body[data-boss-profile="parasite_choir"]    { --boss-accent: rgba(136, 255,  68, 0.85); }
+body[data-boss-profile="null_cortex"]       { --boss-accent: rgba(255,  34,   0, 0.85); }
+
+/* ── Corruption Node Overlays ────────────────────────────────────────────── */
+
+/* Node overlay that has been corrupted by the boss */
+.corrupted.cl-slot,
+.cl-slot.biome-corrupted {
+  background:  linear-gradient(135deg, rgba(136, 255, 68, 0.08), rgba(40, 180, 20, 0.06));
+  border-color: rgba(136, 255, 68, 0.45) !important;
+  box-shadow:  0 0 10px rgba(136, 255, 68, 0.25),
+               inset 0 0 6px rgba(136, 255, 68, 0.12);
+  animation:   corruption-flicker 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes corruption-flicker {
+  from { opacity: 0.75; filter: hue-rotate(0deg);   }
+  to   { opacity: 1.00; filter: hue-rotate(15deg);  }
+}
+
+/* Ghost-specific fake-cluster warning overlay on Boss HUD */
+#boss-hud.ghost-fake-hint {
+  outline:        2px solid rgba(255, 220, 60, 0.70);
+  outline-offset: -2px;
+  animation:      ghost-hint-flash 0.3s ease-in-out 4;
+}
+
+@keyframes ghost-hint-flash {
+  0%   { outline-color: rgba(255, 220, 60, 0.70); }
+  50%  { outline-color: rgba(255, 200, 20, 1.00); box-shadow: 0 0 16px rgba(255, 220, 40, 0.50); }
+  100% { outline-color: rgba(255, 220, 60, 0.70); }
+}
+
+/* ── Brownout global visual ──────────────────────────────────────────────── */
+/* Note: the body.brownout-active rules for dock / HUD flicker are already
+   defined in the main CSS. The block below adds supplemental polish. */
+
+/* brownout fill colour (position/visibility in progressive-ui.css) */
+body.brownout-active #heat-bar-fill {
+  background:  #ff1111;
+  width:       100% !important; /* always full during brownout */
+  transition:  none;
+}
+
+
+/* ── Tactical-mode: mute Phase 3 chrome ─────────────────────────────────── */
+
+body[data-tactical="on"] #boss-phase-dots { opacity: 0.45; }
+
+/* ── Mobile adjustments ──────────────────────────────────────────────────── */
+
+@media (max-width: 520px) {
+  /* #heat-bar-wrap mobile override moved to progressive-ui.css */
+
+  .bpd { width: 6px; height: 6px; }
+  #boss-phase-dots { gap: 4px; }
+}
+
+/* P3 Fix 5.4 — Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  #btn-overclock.oc-active { animation: none; }
+  #heat-bar-fill.heat-critical { animation: none; }
+}

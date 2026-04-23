@@ -1,0 +1,159 @@
+/* ══════════════════════════════════════════════════════════════════
+   SYNAPSE v99 — MISSING PATCHES  (v99-r5)
+   Quelle: synapse_v99_design_review.html — Blöcke 9-A, 9-C, 9-E, 9-F,
+           10-A, 10-B, 10-C, 10-F
+   Alle Blöcke sind einzeln übertragbar — kein Block bricht einen anderen.
+   ══════════════════════════════════════════════════════════════════ */
+
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   9-A  COND-CHIP — scaleX-Slide Eingangs-Übergang
+   Vorher: display:none → inline-flex (instant, kein Übergang)
+   Nachher: scaleX(.6→1) + opacity in .22s
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+#cond-chip {
+  transform-origin: left center;
+  transition:
+    opacity  .22s cubic-bezier(.22, 1, .36, 1),
+    transform .22s cubic-bezier(.22, 1, .36, 1);
+}
+
+/* Versteckter Zustand: clip via scale statt display:none-Wechsel */
+#cond-chip:not(.vis) {
+  opacity: 0;
+  transform: scaleX(.6);
+  pointer-events: none;
+}
+#cond-chip.vis {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   9-C  TOAST — Exit-Animation
+   JS setzt .toast-exit kurz (~300ms) vor dem Entfernen des Elements.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+@keyframes toast-exit-anim {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-14px) scale(.92);
+  }
+}
+
+#toast.toast-exit {
+  animation: toast-exit-anim .30s cubic-bezier(.4, 0, 1, 1) forwards;
+  pointer-events: none;
+}
+
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   9-E  AI-HUD — will-change für GPU-Compositing
+   Verhindert Layout-Thrashing bei opacity/transform-Animationen.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+#ai-hud {
+  will-change: opacity, transform;
+}
+
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   9-F  HISTORY-TOGGLE — Puls-Glow im .ht-prominent State
+   JS-Klasse .ht-prominent ist bereits vorhanden und wird gesetzt,
+   wenn Run-Daten vorliegen. CSS-Gegenstück fehlte bisher.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+@keyframes ht-attention {
+  0%,  100% { box-shadow: none; }
+  50%        { box-shadow: 0 0 0 3px rgba(80, 200, 255, .22); }
+}
+
+#history-toggle.ht-prominent {
+  animation: ht-attention 2.4s ease-in-out infinite;
+}
+
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   10-A  OBJ-LINE — Text-Overflow auf engen Screens
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+#obj-line {
+  max-width: min(92vw, 520px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   10-B  NOW-ACTION — gleiches Overflow-Handling wie obj-line
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+#now-action {
+  max-width: min(92vw, 520px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   10-C  MISSED-FLASH — Aufwärts-Slide Entrance
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+@keyframes missed-flash-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#missed-flash.vis {
+  animation: missed-flash-in .26s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   10-F  HINT — Fade + Slide bei Text-Update
+   JS setzt .hint-update kurz (~350ms) beim Wechsel des Hint-Texts.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+@keyframes hint-update-anim {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  60%  { opacity: 1; transform: translateX(-50%) translateY(-2px); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+#hint.hint-update {
+  animation: hint-update-anim .32s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   GLOBAL — prefers-reduced-motion Guard
+   Deaktiviert alle neuen Animationen für Nutzer mit Bewegungsreduktion
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+@media (prefers-reduced-motion: reduce) {
+  #cond-chip,
+  #cond-chip.vis,
+  #cond-chip:not(.vis)          { transition: none; animation: none; }
+
+  #toast.toast-exit             { animation: none; opacity: 0; }
+
+  #history-toggle.ht-prominent  { animation: none; }
+
+  #missed-flash.vis             { animation: none; opacity: 1; transform: none; }
+
+  #hint.hint-update             { animation: none; }
+}

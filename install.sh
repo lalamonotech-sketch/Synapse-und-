@@ -1,3 +1,4 @@
 #!/bin/bash
-cd synapse_redesign
+set -e
+cd "$(dirname "$0")"
 npm install
